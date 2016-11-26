@@ -1,0 +1,20 @@
+{
+  "name": "trendatron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "jsonfile": "^2.4.0",
+    "lodash": "^4.17.2",
+    "pem": "^1.8.3",
+    "tmi.js": "^1.1.2"
+  }
+}
