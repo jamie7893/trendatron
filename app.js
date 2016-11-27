@@ -409,8 +409,6 @@ function getUsers() {
                         if (stream) {
                             fd.points++;
                             fd.viewingPoints++;
-                        } else {
-                            console.log("offline");
                         }
                         jsonfile.writeFile(`viewers/${user}`, fd, (err) => {
                             if (err) {
