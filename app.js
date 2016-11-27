@@ -30,12 +30,15 @@ let checkTrendTokens = [],
     alreadyGambled = [],
     waitingToTransfer = [],
     topUsers = [],
-    stream;
+    stream,
+    lastMsg;
 client.on('chat', (channel, user, message, self) => {
-
-    // if (message.search("eric") !== -1) {
-    //     client.say("SettingTrends", `SoonerLater`);
-    // }
+    if (message.search("eric") !== -1) {
+        if (lastMsg !== "SoonerLater") {
+            client.say("SettingTrends", `SoonerLater`);
+            lastMsg = "SoonerLater";
+        }
+    }
     if (message.slice(0, 11) === "!highscores") {
         topUsers = _.filter(topUsers, (topUser) => {
             return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot";
@@ -44,7 +47,8 @@ client.on('chat', (channel, user, message, self) => {
                 return a.viewingPoints < b.viewingPoints ? 1 : -1;
             })
             .slice(0, 10);
-        client.say("SettingTrends", `
+        if (lastMsg !== "leaderboard") {
+            client.say("SettingTrends", `
               #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |
               #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |
               #3 ${top10[2].user} Score: ${top10[2].viewingPoints} |
@@ -55,33 +59,41 @@ client.on('chat', (channel, user, message, self) => {
               #8 ${top10[7].user} Score: ${top10[7].viewingPoints} |
               #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |
               #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |  `);
+        }
+        lastMsg = "leaderboard";
     }
 
 
     if (message.slice(0, 11) === "!givepoints") {
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
             if (err) {
-              let pointsToGive;
-              if (parseInt(message.split(" ")[2], 10) >= 0) {
-                  pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-              } else {
+                let pointsToGive;
+                if (parseInt(message.split(" ")[2], 10) >= 0) {
+                    pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
+                } else {
                     pointsToGive = 0 - parseInt(message.split(" ")[2], 10);
-              }
-              jsonfile.writeFile(`viewers/${user}`, {
-                  user: user,
-                  points: pointsToGive,
-                  viewingPoints: 0
-              }, (err) => {
-                  if (err) {
-                      console.log(err);
-                  } else {
-                    if (parseInt(message.split(" ")[2], 10) >= 0) {
-                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                }
+                jsonfile.writeFile(`viewers/${user}`, {
+                    user: user,
+                    points: pointsToGive,
+                    viewingPoints: 0
+                }, (err) => {
+                    if (err) {
+                        console.log(err);
                     } else {
-                        client.say("SettingTrends", `TriHard @${message.split(" ")[1].toLowerCase()} has been robbed ${message.split(" ")[2]} Trend Tokens by ${user.username}! TriHard`);
+                        if (parseInt(message.split(" ")[2], 10) >= 0) {
+                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                            }
+                        } else {
+                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
+                                lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                            }
+                        }
                     }
-                  }
-              });
+                });
             } else {
                 if (fd.supermod && message.split(" ")[1]) {
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
@@ -96,9 +108,15 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         });
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
-                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                            }
                         } else {
-                            client.say("SettingTrends", `TriHard @${message.split(" ")[1].toLowerCase()} has been robbed ${message.split(" ")[2]} Trend Tokens by ${user.username}! TriHard`);
+                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
+                                lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                            }
                         }
                     });
                 }
@@ -109,7 +127,10 @@ client.on('chat', (channel, user, message, self) => {
         if (message.split(" ")[1]) {
             jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                 if (err) {
-                    client.say("SettingTrends", `Check that username SoonerLater!`);
+                    if (lastMsg !== `Check that username SoonerLater!`) {
+                        client.say("SettingTrends", `Check that username SoonerLater!`);
+                        lastMsg = `Check that username SoonerLater!`;
+                    }
                 } else {
                     fd.supermod = true;
                     jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
@@ -117,7 +138,10 @@ client.on('chat', (channel, user, message, self) => {
                             console.log(err);
                         }
                     });
-                    client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`);
+                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`) {
+                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`);
+                        lastMsg = `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`;
+                    }
                 }
             });
         }
@@ -127,7 +151,10 @@ client.on('chat', (channel, user, message, self) => {
         if (message.split(" ")[1]) {
             jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                 if (err) {
-                    client.say("SettingTrends", `Check that username SoonerLater!`);
+                    if (lastMsg !== `Check that username SoonerLater!`) {
+                        client.say("SettingTrends", `Check that username SoonerLater!`);
+                        lastMsg = `Check that username SoonerLater!`;
+                    }
                 } else {
                     fd.supermod = false;
                     jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
@@ -135,7 +162,10 @@ client.on('chat', (channel, user, message, self) => {
                             console.log(err);
                         }
                     });
-                    client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`);
+                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`) {
+                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`);
+                        lastMsg = `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`;
+                    }
                 }
             });
         }
@@ -177,7 +207,10 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         });
                     });
-                    client.say("SettingTrends", `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`);
+                    if (lastMsg !== `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`) {
+                        client.say("SettingTrends", `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`);
+                        lastMsg = `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`;
+                    }
 
                 });
             };
@@ -205,8 +238,8 @@ client.on('chat', (channel, user, message, self) => {
             }
         });
         waitingToTransfer = _.filter(waitingToTransfer, (waitingPerson) => {
-          return waitingPerson !== message.split(" ")[0].toLowerCase();
-        })
+            return waitingPerson !== message.split(" ")[0].toLowerCase();
+        });
     }
 
     if (message.slice(0, 9) === "!transfer") {
@@ -215,7 +248,10 @@ client.on('chat', (channel, user, message, self) => {
                 waitingToTransfer.push(user.username.toLowerCase());
                 client.say("SettingTrends", `@${fd.user} type !points to transfer your points! You can only do this once!`);
             } else {
-                client.say("SettingTrends", `@${fd.user} you have already used your transfer!`);
+                if (lastMsg !== `@${fd.user} you have already used your transfer!`) {
+                    client.say("SettingTrends", `@${fd.user} you have already used your transfer!`);
+                    lastMsg = `@${fd.user} you have already used your transfer!`;
+                }
             }
         });
     }
@@ -230,15 +266,21 @@ client.on('chat', (channel, user, message, self) => {
                     if (err) {
                         console.log(err);
                     } else {
-                      jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-                        client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
-                      });
+                        jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
+                            if (lastMsg !== `@${fd.user} has ${fd.points} Trend Tokens!`) {
+                                client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
+                                lastMsg = `@${fd.user} has ${fd.points} Trend Tokens!`;
+                            }
+                        });
                     }
                 });
 
             } else {
-            client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
-          }
+                if (lastMsg !== `@${fd.user} has ${fd.points} Trend Tokens!`) {
+                    client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
+                    lastMsg = `@${fd.user} has ${fd.points} Trend Tokens!`;
+                }
+            }
         });
     }
     if (message.slice(0, 7) === "!gamble") {
@@ -256,7 +298,10 @@ client.on('chat', (channel, user, message, self) => {
             jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
                 if (err) {
                     // say you have no points
+                    if (lastMsg !== `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`) {
                     client.say("SettingTrends", `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`);
+                    lastMsg = `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`;
+                  }
                 } else {
                     let totalPoints = fd.points;
                     canGamble = true;
@@ -297,9 +342,15 @@ client.on('chat', (channel, user, message, self) => {
                             alreadyGambled.splice(0);
                         }, 60000 * 5);
                     } else if (ammountToGamble > totalPoints) {
+                      if (lastMsg !== `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`) {
                         client.say("SettingTrends", `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
+                        lastMsg = `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`;
+                      }
                     } else if (!canGamble) {
+                      if (lastMsg !== `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`) {
                         client.say("SettingTrends", `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`);
+                        lastMsg = `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`;
+                      }
                     }
                 }
             });
@@ -314,7 +365,6 @@ function getTopUsers() {
     fs.readdir("viewers", (err, files) => {
         topUsers = [];
         _.each(files, (file) => {
-            console.log(file)
             jsonfile.readFile(`viewers/${file}`, (err, fd) => {
                 if (fd) {
                     topUsers.push(fd);
@@ -329,50 +379,49 @@ function getTopUsers() {
 
 
 function getUsers() {
-  console.log("getUsers")
-  callback = function(response) {
-      var str = '';
+    callback = function(response) {
+        var str = '';
 
-      //another chunk of data has been recieved, so append it to `str`
-      response.on('data', function(chunk) {
-          str += chunk;
-      });
+        //another chunk of data has been recieved, so append it to `str`
+        response.on('data', function(chunk) {
+            str += chunk;
+        });
 
-      //the whole response has been recieved, so we just print it out here
-      response.on('end', function() {
-          let users = _.flattenDeep(_.map(JSON.parse(str), (group) => {
-              return _.map(group, (user) => user);
-          }));
-          checkOnline();
-          _.each(users, (user) => {
-              jsonfile.readFile(`viewers/${user}`, (err, fd) => {
-                  if (err) {
-                      jsonfile.writeFile(`viewers/${user}`, {
-                          user: user,
-                          points: 0,
-                          viewingPoints: 0
-                      }, (err) => {
-                          if (err) {
-                              console.log(err);
-                          }
-                      });
-                  } else {
-                      if (stream) {
-                          fd.points++;
-                          fd.viewingPoints++;
-                      } else {
-                        console.log("offline");
-                      }
-                      jsonfile.writeFile(`viewers/${user}`, fd, (err) => {
-                          if (err) {
-                              console.log(err);
-                          }
-                      });
-                  }
-              });
-          });
-      });
-  };
+        //the whole response has been recieved, so we just print it out here
+        response.on('end', function() {
+            let users = _.flattenDeep(_.map(JSON.parse(str), (group) => {
+                return _.map(group, (user) => user);
+            }));
+            checkOnline();
+            _.each(users, (user) => {
+                jsonfile.readFile(`viewers/${user}`, (err, fd) => {
+                    if (err) {
+                        jsonfile.writeFile(`viewers/${user}`, {
+                            user: user,
+                            points: 0,
+                            viewingPoints: 0
+                        }, (err) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                        });
+                    } else {
+                        if (stream) {
+                            fd.points++;
+                            fd.viewingPoints++;
+                        } else {
+                            console.log("offline");
+                        }
+                        jsonfile.writeFile(`viewers/${user}`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    };
     http.request({
         host: "tmi.twitch.tv",
         path: "/group/user/settingtrends/chatters"
@@ -381,8 +430,6 @@ function getUsers() {
         getUsers();
     }, 60000);
 }
-// var ca = fs.readFileSync("./crs.pem");
-// var agent = new https.Agent({ host: "localhost", port: 1738, ca: ca });
 
 function checkOnline() {
     callback = function(response) {
