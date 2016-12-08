@@ -41,7 +41,7 @@ client.on('chat', (channel, user, message, self) => {
     }
     if (message.slice(0, 11) === "!highscores") {
         topUsers = _.filter(topUsers, (topUser) => {
-            return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot";
+            return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot" && topUser.user !== "settingtrends";
         });
         var top10 = topUsers.sort(function(a, b) {
                 return a.viewingPoints < b.viewingPoints ? 1 : -1;
@@ -259,7 +259,7 @@ client.on('chat', (channel, user, message, self) => {
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
             if (err) {
                 jsonfile.writeFile(`viewers/${user.username.toLowerCase()}`, {
-                    user: user["display-name"].toLowerCase(),
+                    user: user.username.toLowerCase(),
                     points: 0,
                     viewingPoints: 0
                 }, (err) => {
@@ -298,9 +298,9 @@ client.on('chat', (channel, user, message, self) => {
             jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
                 if (err) {
                     // say you have no points
-                    if (lastMsg !== `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`) {
-                    client.say("SettingTrends", `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`);
-                    lastMsg = `@${user["display-name"]} you don't have ${ammountToGamble} Trend Tokens!`;
+                    if (lastMsg !== `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`) {
+                    client.say("SettingTrends", `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`);
+                    lastMsg = `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`;
                   }
                 } else {
                     let totalPoints = fd.points;
@@ -329,7 +329,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                             });
                         } else {
-                            client.say("SettingTrends", `@${user["display-name"].toLowerCase()} rolled a ${rolledNumber} and lost ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
+                            client.say("SettingTrends", `@${user.username.toLowerCase()} rolled a ${rolledNumber} and lost ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
                             fd.points -= ammountToGamble;
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
@@ -342,14 +342,14 @@ client.on('chat', (channel, user, message, self) => {
                             alreadyGambled.splice(0);
                         }, 60000 * 5);
                     } else if (ammountToGamble > totalPoints) {
-                      if (lastMsg !== `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`) {
-                        client.say("SettingTrends", `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
-                        lastMsg = `@${user["display-name"].toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`;
+                      if (lastMsg !== `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`) {
+                        client.say("SettingTrends", `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
+                        lastMsg = `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`;
                       }
                     } else if (!canGamble) {
-                      if (lastMsg !== `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`) {
-                        client.say("SettingTrends", `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`);
-                        lastMsg = `@${user["display-name"].toLowerCase()} you have to wait 5 minutes to gamble again.`;
+                      if (lastMsg !== `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`) {
+                        client.say("SettingTrends", `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
+                        lastMsg = `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`;
                       }
                     }
                 }
@@ -409,12 +409,13 @@ function getUsers() {
                         if (stream) {
                             fd.points++;
                             fd.viewingPoints++;
-                        }
+
                         jsonfile.writeFile(`viewers/${user}`, fd, (err) => {
                             if (err) {
                                 console.log(err);
                             }
                         });
+                      }
                     }
                 });
             });
