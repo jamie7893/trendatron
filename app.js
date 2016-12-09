@@ -37,7 +37,7 @@ lottery.users = [];
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+    say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -71,7 +71,7 @@ client.on('chat', (channel, user, message, self) => {
         lastMsg = "leaderboard";
     }
     if (message.slice(0, 6) === "!bonus") {
-        jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
+        jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
             if (err) {
                 let pointsToGive;
                 if (parseInt(message.split(" ")[2], 10) >= 0) {
@@ -79,8 +79,8 @@ client.on('chat', (channel, user, message, self) => {
                 } else {
                     pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
                 }
-                jsonfile.writeFile(`viewers/${user.username}`, {
-                    user: user,
+                jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
+                    user: user.username.toLowerCase(),
                     points: pointsToGive,
                     viewingPoints: 0
                 }, (err) => {
@@ -103,6 +103,35 @@ client.on('chat', (channel, user, message, self) => {
             } else {
                 if (fd.supermod && message.split(" ")[1]) {
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
+                      if (err) {
+                        let pointsToGive;
+                        if (parseInt(message.split(" ")[2], 10) >= 0) {
+                            pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
+                        } else {
+                            pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
+                        }
+                        jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
+                            user: user.username.toLowerCase(),
+                            points: pointsToGive,
+                            viewingPoints: 0
+                        }, (err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                                    }
+                                } else {
+                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
+                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                    }
+                                }
+                            }
+                        });
+                      } else {
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
                             fd.points += parseInt(message.split(" ")[2], 10);
                         } else {
@@ -125,7 +154,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                             }
                         });
-
+}
                     });
                 }
             }
@@ -196,7 +225,7 @@ client.on('chat', (channel, user, message, self) => {
                         jsonfile.readFile(`viewers/${user}`, (err, fd) => {
                             if (err) {
                                 jsonfile.writeFile(`viewers/${user}`, {
-                                    user: user,
+                                    user: user.username.toLowerCase(),
                                     points: parseInt(message.split(" ")[1], 10),
                                     viewingPoints: 0
                                 }, (err) => {
@@ -518,7 +547,7 @@ function doLottery() {
                             say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
                             lottery.users = [];
                             lottery.newPot = 0;
-                            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+                            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
@@ -563,7 +592,7 @@ function resetLotteryPot() {
         if (err) {
             console.log(err);
         } else {
-            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
         }
     });
 }
