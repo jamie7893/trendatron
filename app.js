@@ -98,8 +98,10 @@ client.on('chat', (channel, user, message, self) => {
                 if (fd.supermod && message.split(" ")[1]) {
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
+                          client.say("SettingTrends", `give`);
                             fd.points += parseInt(message.split(" ")[2], 10);
                         } else {
+                            client.say("SettingTrends", `take`);
                             fd.points = fd.points - parseInt(message.split(" ")[2], 10);
                         }
                         jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
