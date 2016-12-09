@@ -71,9 +71,9 @@ client.on('chat', (channel, user, message, self) => {
                 if (parseInt(message.split(" ")[2], 10) >= 0) {
                     pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
                 } else {
-                    pointsToGive = 0 - parseInt(message.split(" ")[2], 10);
+                    pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
                 }
-                jsonfile.writeFile(`viewers/${user}`, {
+                jsonfile.writeFile(`viewers/${user.username}`, {
                     user: user,
                     points: pointsToGive,
                     viewingPoints: 0
@@ -98,11 +98,9 @@ client.on('chat', (channel, user, message, self) => {
                 if (fd.supermod && message.split(" ")[1]) {
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
-                          client.say("SettingTrends", `give`);
                             fd.points += parseInt(message.split(" ")[2], 10);
                         } else {
-                            client.say("SettingTrends", `take`);
-                            fd.points = fd.points - parseInt(message.split(" ")[2], 10);
+                            fd.points += parseInt(message.split(" ")[2], 10);
                         }
                         jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
                             if (err) {
