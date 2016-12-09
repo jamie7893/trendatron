@@ -64,7 +64,7 @@ client.on('chat', (channel, user, message, self) => {
     }
 
 
-    if (message.slice(0, 11) === "!givepoints") {
+    if (message.slice(0, 6) === "!bonus") {
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
             if (err) {
                 let pointsToGive;
@@ -100,24 +100,26 @@ client.on('chat', (channel, user, message, self) => {
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
                             fd.points += parseInt(message.split(" ")[2], 10);
                         } else {
-                            fd.points -= parseInt(message.split(" ")[2], 10);
+                            fd.points = fd.points - parseInt(message.split(" ")[2], 10);
                         }
                         jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
                             if (err) {
                                 console.log(err);
+                            } else {
+                              if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                  if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                      client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                      lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                                  }
+                              } else {
+                                  if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                      client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
+                                      lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                  }
+                              }
                             }
                         });
-                        if (parseInt(message.split(" ")[2], 10) >= 0) {
-                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                            }
-                        } else {
-                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
-                                lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
-                            }
-                        }
+
                     });
                 }
             }
