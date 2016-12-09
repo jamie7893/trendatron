@@ -33,10 +33,11 @@ let checkTrendTokens = [],
     stream,
     lastMsg,
     lottery = {};
-    lottery.users = [];
+lottery.users = [];
+lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-  say(`The lottery drawing will begin in 30 seconds! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+    say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -361,147 +362,172 @@ client.on('chat', (channel, user, message, self) => {
             });
         }
     }
-    // lottery
-    if(message.slice(0, 7) === "!ticket") {
-      let numberOfTickets = parseInt(message.split(" ")[1], 10),
-          totalCost = 100 * numberOfTickets;
+    if (message.slice(0, 7) === "!ticket") {
+        let numberOfTickets = parseInt(message.split(" ")[1], 10),
+            totalCost = 100 * numberOfTickets;
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-          if (err) {
-            // user dosnt exist
-
-          } else {
-            // user exist
-            if (fd.points < totalCost) {
-                say(`${user.username} you only have ${fd.points} Trend Tokens!`);
+            if (err) {
+              say(`${user.username} you don't have enough Trend Tokens!`);
             } else {
-              fd.points -= totalCost;
-              jsonfile.writeFile(`viewers/${user.username}`, fd, (err) => {
-                if (err) {
-                  console.log(err);
+                // user exist
+                if (fd.points < totalCost) {
+                    say(`${user.username} you only have ${fd.points} Trend Tokens!`);
                 } else {
-                  let hasTickets = _.some(lottery.users, (currentUsers) => {
-                    return currentUsers.username === user.username;
-                  }),
-                  ticketNumbers;
-                  if (hasTickets) {
-                    _.each(lottery.users, (currentUsers) => {
-                      if (currentUsers.username === user.username) {
-                        for (var i = numberOfTickets; i > 0; i--) {
-                          currentUsers.tickets.push(getTicketNumber());
+                    fd.points -= totalCost;
+                    jsonfile.writeFile(`viewers/${user.username}`, fd, (err) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            let hasTickets = _.some(lottery.users, (currentUsers) => {
+                                    return currentUsers.username === user.username;
+                                }),
+                                ticketNumbers;
+                            if (hasTickets) {
+                                _.each(lottery.users, (currentUsers) => {
+                                    if (currentUsers.username === user.username) {
+                                        for (var i = numberOfTickets; i > 0; i--) {
+                                            currentUsers.tickets.push(getTicketNumber());
+                                        }
+                                        ticketNumbers = currentUsers.tickets;
+                                    }
+                                });
+                                lottery.newPot += totalCost * 0.5;
+                                say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
+                            } else {
+                                let newUser = {};
+                                newUser.username = user.username;
+                                newUser.tickets = [];
+                                lottery.newPot += totalCost * 0.5;
+                                for (var i = numberOfTickets; i > 0; i--) {
+                                    newUser.tickets.push(getTicketNumber());
+                                }
+                                lottery.users.push(newUser);
+                                say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
+                            }
                         }
-                        ticketNumbers = currentUsers.tickets;
-                      }
                     });
-                    lottery.newPot += totalCost / 50;
-                    say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
-                  } else {
-                    let newUser = {};
-                    newUser.username = user.username;
-                    newUser.tickets = [];
-                    lottery.newPot += totalCost / 50;
-                    for (var i = numberOfTickets; i > 0; i--) {
-                      newUser.tickets.push(getTicketNumber());
-                    }
-                    lottery.users.push(newUser);
-                    say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
-                  }
                 }
-              });
             }
-          }
+        });
+    }
+
+    if (message.slice(0, 8) === "!lottery") {
+        jsonfile.readFile(`./lottery.json`, (err, fd) => {
+            if (err) {
+                console.log(err);
+            } else {
+                say(`The current lottery pot is ${fd.pot} Trend Tokens!`);
+            }
         });
     }
 });
 
-setTimeout(() => {
-  let winningNumber = getTicketNumber(),
-  winners = [];
-  _.each(lottery.users, (currentUsers) => {
-    _.each(currentUsers.tickets, (ticket) => {
-      if (ticket === winningNumber) {
-        winners.push(currentUsers.username);
-      }
-    });
-  });
-  if (winners.length) {
-    if (winners.length === 1) {
-        jsonfile.readFile(`./lottery.json`, (err, fd) => {
-          if (err) {
-            cosole.log(err);
-          } else {
-      let winningPot = fd.pot;
-        fd.pot = 10000 + lottery.newPot;
-          say(`${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
-        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-          if (err) {
-            console.log(err);
-          } else {
-            jsonfile.readFile(`/viewers/${winners[0]}`, (err, fd) => {
-              if (err) {
-                console.log(err);
-              } else {
-                fd.points += winningPot;
-                jsonfile.writeFile(`/viewers/${winners[0]}`, fd, (err) => {
-                  if (err) {
-                    console.log(err);
-                  }
-                });
-              }
-            });
-          }
-    });
-  }
-  });
-
-    } else {
-      jsonfile.readFile(`./lottery.json`, (err, fd) => {
-        if (err) {
-          console.log(err);
-        }  else {
-        let winningPot = fd.pot;
-          fd.pot = 10000 + lottery.newPot;
-          jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-            say(`There was more then one winner! Here are your winners: ${winners.toString()} they each get ${winningPot / winners.length}!`);
-            });
-}
-          });
-        _.each(winners, (winner) => {
-          jsonfile.readFile(`/viewers/${winner}`, (err, fd) => {
-            if (err) {
-              console.log(err);
-            } else {
-              fd.points += winningPot / winners.length;
-              jsonfile.writeFile(`/viewers/${winner}`, fd, (err) => {
-                if (err) {
-                  console.log(err);
+function doLottery() {
+    setInterval(() => {
+        let winningNumber = getTicketNumber(),
+            winners = [];
+        _.each(lottery.users, (currentUsers) => {
+            _.each(currentUsers.tickets, (ticket) => {
+                if (ticket === winningNumber) {
+                    winners.push(currentUsers.username);
                 }
-              });
+            });
+        });
+        if (winners.length) {
+            if (winners.length === 1) {
+                jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                    if (err) {
+                        cosole.log(err);
+                    } else {
+                        let winningPot = fd.pot;
+                        fd.pot = 10000 + lottery.newPot;
+                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
+                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                jsonfile.readFile(`viewers/${winners[0]}`, (err, fd) => {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        fd.points += winningPot;
+                                        jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                lottery.users = [];
+                                                lottery.newPot = 0;
+                                                resetLotteryPot();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+            } else {
+                jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        let winningPot = fd.pot;
+                        fd.pot = 10000 + lottery.newPot;
+                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
+                                _.each(winners, (winner) => {
+                                    jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            fd.points += Math.floor(winningPot / winners.length);
+                                            jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
+                                                if (err) {
+                                                    console.log(err);
+                                                } else {
+                                                    lottery.users = [];
+                                                    lottery.newPot = 0;
+                                                    resetLotteryPot();
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                });
+                            }
+                        });
+                    }
+                });
             }
-          });
+        } else {
+            jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(lottery.newPot);
+                    fd.pot += lottery.newPot;
+                    let thePot = fd.pot;
+                    jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
+                            lottery.users = [];
+                            lottery.newPot = 0;
+                            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+                        }
+                    });
+                }
 
-        });
-    }
-  } else {
-    jsonfile.readFile(`./lottery.json`, (err, fd) => {
-      if (err) {
-        console.log(err);
-      } else {
-      fd.pot += lottery.newPot;
-        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-          if (err) {
-            console.log(err);
-          } else {
-          say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${fd.pot}`);
+            });
         }
-        });
-      }
 
-        });
-  }
-  lottery.users = [];
-  lottery.newPot = 0;
-  say(`The lottery drawing will begin in 30 seconds! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
-}, 60000 * 0.5);
+    }, 60000 * 60);
+}
 
 function getTopUsers() {
     fs.readdir("viewers", (err, files) => {
@@ -520,14 +546,26 @@ function getTopUsers() {
 }
 
 function say(message) {
-  if(lastMsg !== message) {
-  client.say("SettingTrends", `${message}`);
-  lastMsg = message;
-  }
+    if (lastMsg !== message) {
+        client.say("SettingTrends", `${message}`);
+        lastMsg = message;
+    }
 }
 
 function getTicketNumber() {
-  return  Math.floor(Math.random() * (1000 - 1 + 1)) + 1;
+    return Math.floor(Math.random() * (1000 - 1 + 1)) + 1;
+}
+
+function resetLotteryPot() {
+    jsonfile.writeFile(`lottery`, {
+        pot: 10000
+    }, (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+        }
+    });
 }
 
 function getUsers() {
@@ -604,3 +642,4 @@ function checkOnline() {
 }
 getUsers();
 getTopUsers();
+doLottery();
