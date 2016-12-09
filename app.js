@@ -380,9 +380,9 @@ client.on('chat', (channel, user, message, self) => {
                   console.log(err);
                 } else {
                   let hasTickets = _.some(lottery.users, (currentUsers) => {
-                    return currentUsers.username === user.username,
-                    ticketNumbers;
-                  });
+                    return currentUsers.username === user.username;
+                  }),
+                  ticketNumbers;
                   if (hasTickets) {
                     _.each(lottery.users, (currentUsers) => {
                       if (currentUsers.username === user.username) {
