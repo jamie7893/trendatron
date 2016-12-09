@@ -34,6 +34,11 @@ let checkTrendTokens = [],
     lastMsg,
     lottery = {};
     lottery.users = [];
+
+client.on('connected', (address, port) => {
+  say(`The lottery drawing will begin in 30 seconds! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
+});
+
 client.on('chat', (channel, user, message, self) => {
     if (message.search("eric") !== -1) {
         if (lastMsg !== "SoonerLater") {
@@ -418,11 +423,14 @@ client.on('chat', (channel, user, message, self) => {
       });
       if (winners.length) {
         if (winners.length === 1) {
-            jsonfile.readFile(`/lottery`, (err, fd) => {
+            jsonfile.readFile(`./lottery.json`, (err, fd) => {
+              if (err) {
+                cosole.log(err);
+              } else {
           let winningPot = fd.pot;
             fd.pot = 10000 + lottery.newPot;
               say(`${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
-            jsonfile.writeFile(`/lottery`, fd, (err) => {
+            jsonfile.writeFile(`./lottery.json`, fd, (err) => {
               if (err) {
                 console.log(err);
               } else {
@@ -440,16 +448,20 @@ client.on('chat', (channel, user, message, self) => {
                 });
               }
         });
+      }
       });
 
         } else {
-          jsonfile.readFile(`/lottery`, (err, fd) => {
+          jsonfile.readFile(`./lottery.json`, (err, fd) => {
+            if (err) {
+              console.log(err);
+            }  else {
             let winningPot = fd.pot;
               fd.pot = 10000 + lottery.newPot;
-              jsonfile.writeFile(`/lottery`, fd, (err) => {
+              jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                 say(`There was more then one winner! Here are your winners: ${winners.toString()} they each get ${winningPot / winners.length}!`);
                 });
-
+}
               });
             _.each(winners, (winner) => {
               jsonfile.readFile(`/viewers/${winner}`, (err, fd) => {
@@ -468,27 +480,27 @@ client.on('chat', (channel, user, message, self) => {
             });
         }
       } else {
-        jsonfile.readFile(`/lottery`, (err, fd) => {
+        jsonfile.readFile(`./lottery.json`, (err, fd) => {
+          if (err) {
+            console.log(err);
+          } else {
           fd.pot += lottery.newPot;
-            jsonfile.writeFile(`/lottery`, fd, (err) => {
+            jsonfile.writeFile(`./lottery.json`, fd, (err) => {
               if (err) {
                 console.log(err);
               } else {
               say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${fd.pot}`);
             }
             });
+          }
 
             });
       }
       lottery.users = [];
       lottery.newPot = 0;
-      startLottery();
+      say(`The lottery drawing will begin in 30 seconds! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
     }, 60000 * 0.5);
 });
-
-function startLottery() {
-    say(`The lottery drawing will begin in 30 seconds! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket ammount". Good Luck!`);
-}
 
 function getTopUsers() {
     fs.readdir("viewers", (err, files) => {
@@ -591,4 +603,3 @@ function checkOnline() {
 }
 getUsers();
 getTopUsers();
-startLottery();
