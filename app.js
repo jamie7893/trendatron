@@ -73,62 +73,62 @@ client.on('chat', (channel, user, message, self) => {
     if (message.slice(0, 6) === "!bonus") {
         jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
             if (err) {
-              console.log(err);
+                console.log(err);
             } else {
                 if (fd.supermod && message.split(" ")[1]) {
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
-                      if (err) {
-                        let pointsToGive;
-                        if (parseInt(message.split(" ")[2], 10) >= 0) {
-                            pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                        } else {
-                            pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                        }
-                        jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
-                            user: user.username.toLowerCase(),
-                            points: pointsToGive,
-                            viewingPoints: 0
-                        }, (err) => {
-                            if (err) {
-                                console.log(err);
+                        if (err) {
+                            let pointsToGive;
+                            if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
                             } else {
-                                if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                                    }
+                                pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
+                            }
+                            jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
+                                user: user.username.toLowerCase(),
+                                points: pointsToGive,
+                                viewingPoints: 0
+                            }, (err) => {
+                                if (err) {
+                                    console.log(err);
                                 } else {
-                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
-                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                    if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                                        }
+                                    } else {
+                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
+                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                        }
                                     }
                                 }
-                            }
-                        });
-                      } else {
-                        if (parseInt(message.split(" ")[2], 10) >= 0) {
-                            fd.points += parseInt(message.split(" ")[2], 10);
+                            });
                         } else {
-                            fd.points += parseInt(message.split(" ")[2], 10);
-                        }
-                        jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
-                            if (err) {
-                              console.log(err);
+                            if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                fd.points += parseInt(message.split(" ")[2], 10);
                             } else {
-                                if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                                    }
+                                fd.points += parseInt(message.split(" ")[2], 10);
+                            }
+                            jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
+                                if (err) {
+                                    console.log(err);
                                 } else {
-                                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
-                                        lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                    if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
+                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
+                                        }
+                                    } else {
+                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
+                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
+                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
+                                        }
                                     }
                                 }
-                            }
-                        });
-}
+                            });
+                        }
                     });
                 }
             }
@@ -370,7 +370,7 @@ client.on('chat', (channel, user, message, self) => {
             totalCost = 10 * numberOfTickets;
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
             if (err) {
-              say(`${user.username} you don't have enough Trend Tokens!`);
+                say(`${user.username} you don't have enough Trend Tokens!`);
             } else {
                 // user exist
                 if (fd.points < totalCost) {
@@ -423,38 +423,74 @@ client.on('chat', (channel, user, message, self) => {
             }
         });
     }
+    if (user.username === "settingtrends" && message.slice(0, 10) === "!dolottery") {
+        doLotteryNow();
+    }
 });
 
-function doLottery() {
-    setInterval(() => {
-        let winningNumber = getTicketNumber(),
-            winners = [];
-        _.each(lottery.users, (currentUsers) => {
-            _.each(currentUsers.tickets, (ticket) => {
-                if (ticket === winningNumber) {
-                    winners.push(currentUsers.username);
+function doLotteryNow() {
+    let winningNumber = getTicketNumber(),
+        winners = [];
+    _.each(lottery.users, (currentUsers) => {
+        _.each(currentUsers.tickets, (ticket) => {
+            if (ticket === winningNumber) {
+                winners.push(currentUsers.username);
+            }
+        });
+    });
+    if (winners.length) {
+        if (winners.length === 1) {
+            jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                if (err) {
+                    cosole.log(err);
+                } else {
+                    let winningPot = fd.pot;
+                    fd.pot = 5000 + lottery.newPot;
+                    say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
+                    jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            jsonfile.readFile(`viewers/${winners[0]}`, (err, fd) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    fd.points += winningPot;
+                                    jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            lottery.users = [];
+                                            lottery.newPot = 0;
+                                            resetLotteryPot();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 }
             });
-        });
-        if (winners.length) {
-            if (winners.length === 1) {
-                jsonfile.readFile(`./lottery.json`, (err, fd) => {
-                    if (err) {
-                        cosole.log(err);
-                    } else {
-                        let winningPot = fd.pot;
-                        fd.pot = 5000 + lottery.newPot;
-                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
-                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                jsonfile.readFile(`viewers/${winners[0]}`, (err, fd) => {
+
+        } else {
+            jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    let winningPot = fd.pot;
+                    fd.pot = 5000 + lottery.newPot;
+                    jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
+                            _.each(winners, (winner) => {
+                                jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        fd.points += winningPot;
-                                        jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
+                                        fd.points += Math.floor(winningPot / winners.length);
+                                        jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
                                             if (err) {
                                                 console.log(err);
                                             } else {
@@ -465,70 +501,41 @@ function doLottery() {
                                         });
                                     }
                                 });
-                            }
-                        });
-                    }
-                });
 
-            } else {
-                jsonfile.readFile(`./lottery.json`, (err, fd) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        let winningPot = fd.pot;
-                        fd.pot = 5000 + lottery.newPot;
-                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
-                                _.each(winners, (winner) => {
-                                    jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
-                                        if (err) {
-                                            console.log(err);
-                                        } else {
-                                            fd.points += Math.floor(winningPot / winners.length);
-                                            jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
-                                                if (err) {
-                                                    console.log(err);
-                                                } else {
-                                                    lottery.users = [];
-                                                    lottery.newPot = 0;
-                                                    resetLotteryPot();
-                                                }
-                                            });
-                                        }
-                                    });
-
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        } else {
-            jsonfile.readFile(`./lottery.json`, (err, fd) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(lottery.newPot);
-                    fd.pot += lottery.newPot;
-                    let thePot = fd.pot;
-                    jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
-                            lottery.users = [];
-                            lottery.newPot = 0;
-                            say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                            });
                         }
                     });
                 }
-
             });
         }
+    } else {
+        jsonfile.readFile(`./lottery.json`, (err, fd) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(lottery.newPot);
+                fd.pot += lottery.newPot;
+                let thePot = fd.pot;
+                jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
+                        lottery.users = [];
+                        lottery.newPot = 0;
+                        say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                    }
+                });
+            }
 
+        });
+    }
+
+}
+
+function doLottery() {
+    setInterval(() => {
+        doLotteryNow();
     }, 60000 * 60);
 }
 
