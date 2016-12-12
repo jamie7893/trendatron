@@ -37,7 +37,7 @@ lottery.users = [];
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+    say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -393,7 +393,7 @@ client.on('chat', (channel, user, message, self) => {
     }
     if (message.slice(0, 7) === "!ticket") {
         let numberOfTickets = parseInt(message.split(" ")[1], 10),
-            totalCost = 100 * numberOfTickets;
+            totalCost = 10 * numberOfTickets;
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
             if (err) {
               say(`${user.username} you don't have enough Trend Tokens!`);
@@ -469,7 +469,7 @@ function doLottery() {
                         cosole.log(err);
                     } else {
                         let winningPot = fd.pot;
-                        fd.pot = 10000 + lottery.newPot;
+                        fd.pot = 5000 + lottery.newPot;
                         say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                             if (err) {
@@ -502,7 +502,7 @@ function doLottery() {
                         console.log(err);
                     } else {
                         let winningPot = fd.pot;
-                        fd.pot = 10000 + lottery.newPot;
+                        fd.pot = 5000 + lottery.newPot;
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                             if (err) {
                                 console.log(err);
@@ -547,7 +547,7 @@ function doLottery() {
                             say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
                             lottery.users = [];
                             lottery.newPot = 0;
-                            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                            say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
@@ -587,12 +587,12 @@ function getTicketNumber() {
 
 function resetLotteryPot() {
     jsonfile.writeFile(`lottery`, {
-        pot: 10000
+        pot: 5000
     }, (err) => {
         if (err) {
             console.log(err);
         } else {
-            say(`The lottery drawing will begin in one hour! Tickets cost 100 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+            say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
         }
     });
 }
