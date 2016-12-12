@@ -71,44 +71,13 @@ client.on('chat', (channel, user, message, self) => {
         lastMsg = "leaderboard";
     }
     if (message.slice(0, 6) === "!bonus") {
-        jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
-          console.log(`In bonus, username:${message.split(" ")[1].toLowerCase()}`);
+        jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
             if (err) {
-              console.log(`1: ${err}`);
-                let pointsToGive;
-                if (parseInt(message.split(" ")[2], 10) >= 0) {
-                    pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                } else {
-                    pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                }
-                jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
-                    user: user.username.toLowerCase(),
-                    points: pointsToGive,
-                    viewingPoints: 0
-                }, (err) => {
-                    if (err) {
-                        console.log(`2: ${err}`);
-                    } else {
-                      console.log('in bonus after creating file');
-                        if (parseInt(message.split(" ")[2], 10) >= 0) {
-                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                            }
-                        } else {
-                            if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
-                                lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
-                            }
-                        }
-                    }
-                });
+              console.log(err);
             } else {
                 if (fd.supermod && message.split(" ")[1]) {
-                  console.log('in bonus and file exist');
                     jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                       if (err) {
-                          console.log(`3: ${err}`);
                         let pointsToGive;
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
                             pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
@@ -137,7 +106,6 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         });
                       } else {
-                        console.log('in bonus and just read file');
                         if (parseInt(message.split(" ")[2], 10) >= 0) {
                             fd.points += parseInt(message.split(" ")[2], 10);
                         } else {
@@ -145,9 +113,8 @@ client.on('chat', (channel, user, message, self) => {
                         }
                         jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
                             if (err) {
-                                console.log(`err after write to file ${err}`);
+                              console.log(err);
                             } else {
-                              console.log('write to file was good');
                                 if (parseInt(message.split(" ")[2], 10) >= 0) {
                                     if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
                                         client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
