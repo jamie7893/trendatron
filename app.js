@@ -37,7 +37,7 @@ lottery.users = [];
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+    say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -523,7 +523,7 @@ function doLotteryNow() {
                         say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
                         lottery.users = [];
                         lottery.newPot = 0;
-                        say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                        say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                     }
                 });
             }
@@ -573,7 +573,7 @@ function resetLotteryPot() {
         if (err) {
             console.log(err);
         } else {
-            say(`The lottery drawing will begin in one hour! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+            say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
         }
     });
 }
