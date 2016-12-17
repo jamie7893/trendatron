@@ -567,15 +567,16 @@ function getTicketNumber() {
 }
 
 function resetLotteryPot() {
-    jsonfile.writeFile(`lottery`, {
-        pot: 5000
-    }, (err) => {
+    jsonfile.readFile(`lottery`, (err, fd) => {
+      fd.pot = 5000;
+    jsonfile.writeFile(`lottery`, fd, (err) => {
         if (err) {
             console.log(err);
         } else {
             say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
         }
     });
+  });
 }
 
 function getUsers() {
