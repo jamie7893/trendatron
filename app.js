@@ -366,6 +366,7 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
     if (message.slice(0, 7) === "!ticket") {
+      if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
         let numberOfTickets = parseInt(message.split(" ")[1], 10),
             totalCost = 10 * numberOfTickets;
         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
@@ -412,6 +413,7 @@ client.on('chat', (channel, user, message, self) => {
                 }
             }
         });
+      }
     }
 
     if (message.slice(0, 8) === "!lottery") {
