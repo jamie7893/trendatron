@@ -633,16 +633,6 @@ function getUsers() {
     }, 60000);
 }
 
-function countInArray(array, what) {
-    var count = 0;
-    for (var i = 0; i < array.length; i++) {
-        if (array[i] === what) {
-            count++;
-        }
-    }
-    return count;
-}
-
 function checkOnline() {
     callback = function(response) {
         var str = '';
