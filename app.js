@@ -57,16 +57,16 @@ client.on('chat', (channel, user, message, self) => {
             .slice(0, 10);
         if (lastMsg !== "leaderboard") {
             client.say("SettingTrends", `
-              #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |        
-              #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |        
-              #3 ${top10[2].user} Score: ${top10[2].viewingPoints} |        
-              #4 ${top10[3].user} Score: ${top10[3].viewingPoints} |        
-              #5 ${top10[4].user} Score: ${top10[4].viewingPoints} |        
-              #6 ${top10[5].user} Score: ${top10[5].viewingPoints} |        
-              #7 ${top10[6].user} Score: ${top10[6].viewingPoints} |        
-              #8 ${top10[7].user} Score: ${top10[7].viewingPoints} |        
-              #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |        
-              #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |          `);
+              #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |
+              #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |
+              #3 ${top10[2].user} Score: ${top10[2].viewingPoints} |
+              #4 ${top10[3].user} Score: ${top10[3].viewingPoints} |
+              #5 ${top10[4].user} Score: ${top10[4].viewingPoints} |
+              #6 ${top10[5].user} Score: ${top10[5].viewingPoints} |
+              #7 ${top10[6].user} Score: ${top10[6].viewingPoints} |
+              #8 ${top10[7].user} Score: ${top10[7].viewingPoints} |
+              #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |
+              #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |`);
         }
         lastMsg = "leaderboard";
     }
