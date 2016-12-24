@@ -47,7 +47,7 @@ client.on('chat', (channel, user, message, self) => {
             lastMsg = "SoonerLater";
         }
     }
-    if (message.slice(0, 11) === "!highscores") {
+    if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
         topUsers = _.filter(topUsers, (topUser) => {
             return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot" && topUser.user !== "settingtrends";
         });
@@ -57,16 +57,16 @@ client.on('chat', (channel, user, message, self) => {
             .slice(0, 10);
         if (lastMsg !== "leaderboard") {
             client.say("SettingTrends", `
-              #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |
-              #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |
-              #3 ${top10[2].user} Score: ${top10[2].viewingPoints} |
-              #4 ${top10[3].user} Score: ${top10[3].viewingPoints} |
-              #5 ${top10[4].user} Score: ${top10[4].viewingPoints} |
-              #6 ${top10[5].user} Score: ${top10[5].viewingPoints} |
-              #7 ${top10[6].user} Score: ${top10[6].viewingPoints} |
-              #8 ${top10[7].user} Score: ${top10[7].viewingPoints} |
-              #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |
-              #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |  `);
+              #1_${top10[0].user}_Score:_${top10[0].viewingPoints}_
+              #2_${top10[1].user}_Score:_${top10[1].viewingPoints}_
+              #3_${top10[2].user}_Score:_${top10[2].viewingPoints}_
+              #4_${top10[3].user}_Score:_${top10[3].viewingPoints}_
+              #5_${top10[4].user}_Score:_${top10[4].viewingPoints}_
+              #6_${top10[5].user}_Score:_${top10[5].viewingPoints}_
+              #7_${top10[6].user}_Score:_${top10[6].viewingPoints}_
+              #8_${top10[7].user}_Score:_${top10[7].viewingPoints}_
+              #9_${top10[8].user}_Score:_${top10[8].viewingPoints}_
+              #10_${top10[9].user}_Score:_${top10[9].viewingPoints}_  `);
         }
         lastMsg = "leaderboard";
     }
