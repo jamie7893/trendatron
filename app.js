@@ -37,7 +37,7 @@ lottery.users = [];
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    //say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+    say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -366,54 +366,54 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
     if (message.slice(0, 7) === "!ticket") {
-      if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
-        let numberOfTickets = parseInt(message.split(" ")[1], 10),
-            totalCost = 10 * numberOfTickets;
-        jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-            if (err) {
-                say(`${user.username} you don't have enough Trend Tokens!`);
-            } else {
-                // user exist
-                if (fd.points < totalCost) {
-                    say(`${user.username} you only have ${fd.points} Trend Tokens!`);
+        if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
+            let numberOfTickets = parseInt(message.split(" ")[1], 10),
+                totalCost = 10 * numberOfTickets;
+            jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
+                if (err) {
+                    say(`${user.username} you don't have enough Trend Tokens!`);
                 } else {
-                    fd.points -= totalCost;
-                    jsonfile.writeFile(`viewers/${user.username}`, fd, (err) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            let hasTickets = _.some(lottery.users, (currentUsers) => {
-                                    return currentUsers.username === user.username;
-                                }),
-                                ticketNumbers;
-                            if (hasTickets) {
-                                _.each(lottery.users, (currentUsers) => {
-                                    if (currentUsers.username === user.username) {
-                                        for (var i = numberOfTickets; i > 0; i--) {
-                                            currentUsers.tickets.push(getTicketNumber());
-                                        }
-                                        ticketNumbers = currentUsers.tickets;
-                                    }
-                                });
-                                lottery.newPot += totalCost * 0.5;
-                                say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
+                    // user exist
+                    if (fd.points < totalCost) {
+                        say(`${user.username} you only have ${fd.points} Trend Tokens!`);
+                    } else {
+                        fd.points -= totalCost;
+                        jsonfile.writeFile(`viewers/${user.username}`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
                             } else {
-                                let newUser = {};
-                                newUser.username = user.username;
-                                newUser.tickets = [];
-                                lottery.newPot += totalCost * 0.5;
-                                for (var i = numberOfTickets; i > 0; i--) {
-                                    newUser.tickets.push(getTicketNumber());
+                                let hasTickets = _.some(lottery.users, (currentUsers) => {
+                                        return currentUsers.username === user.username;
+                                    }),
+                                    ticketNumbers;
+                                if (hasTickets) {
+                                    _.each(lottery.users, (currentUsers) => {
+                                        if (currentUsers.username === user.username) {
+                                            for (var i = numberOfTickets; i > 0; i--) {
+                                                currentUsers.tickets.push(getTicketNumber());
+                                            }
+                                            ticketNumbers = currentUsers.tickets;
+                                        }
+                                    });
+                                    lottery.newPot += totalCost * 0.5;
+                                    say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
+                                } else {
+                                    let newUser = {};
+                                    newUser.username = user.username;
+                                    newUser.tickets = [];
+                                    lottery.newPot += totalCost * 0.5;
+                                    for (var i = numberOfTickets; i > 0; i--) {
+                                        newUser.tickets.push(getTicketNumber());
+                                    }
+                                    lottery.users.push(newUser);
+                                    say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
                                 }
-                                lottery.users.push(newUser);
-                                say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
                             }
-                        }
-                    });
+                        });
+                    }
                 }
-            }
-        });
-      }
+            });
+        }
     }
 
     if (message.slice(0, 8) === "!lottery") {
@@ -495,16 +495,16 @@ function doLotteryNow() {
                                         jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
                                             if (err) {
                                                 console.log(err);
-                                            } else {
-                                                lottery.users = [];
-                                                lottery.newPot = 0;
-                                                resetLotteryPot();
                                             }
                                         });
                                     }
                                 });
 
                             });
+
+                            lottery.users = [];
+                            lottery.newPot = 0;
+                            resetLotteryPot();
                         }
                     });
                 }
@@ -570,15 +570,15 @@ function getTicketNumber() {
 
 function resetLotteryPot() {
     jsonfile.readFile(`lottery`, (err, fd) => {
-      fd.pot = 5000;
-    jsonfile.writeFile(`lottery`, fd, (err) => {
-        if (err) {
-            console.log(err);
-        } else {
-            say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
-        }
+        fd.pot = 5000;
+        jsonfile.writeFile(`lottery`, fd, (err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+            }
+        });
     });
-  });
 }
 
 function getUsers() {
@@ -631,6 +631,16 @@ function getUsers() {
     setTimeout(() => {
         getUsers();
     }, 60000);
+}
+
+function countInArray(array, what) {
+    var count = 0;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === what) {
+            count++;
+        }
+    }
+    return count;
 }
 
 function checkOnline() {
