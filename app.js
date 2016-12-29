@@ -41,21 +41,23 @@ client.on('connected', (address, port) => {
 });
 
 client.on('chat', (channel, user, message, self) => {
-  let a = (user.username.toLowerCase() === "settingtrends");
+    let a = (user.username.toLowerCase() === "settingtrends");
     if (message.search("eric") !== -1) {
-            if (user.username.toLowerCase() === "quakerrs") {
-                say(`CHRIS`);
-            } else if (user.username.toLowerCase() === "false_hopes") {
-                say(`JERRI`);
-            } else if (user.username.toLowerCase() === "alfierules") {
-                say(`ALFRED THE THIRD`);
-            } else if (user.username.toLowerCase() === "jessicaonrs") {
-                say(`JESSICA`);
-            } else if (user.username.toLowerCase() === "hazey7893") {
-                say(`JAMIE`);
-            } else {
-              say(`${user.userame.toUpperCase()}`);
-            }
+        if (user.username.toLowerCase() === "quakerrs") {
+            say(`CHRIS`);
+        } else if (user.username.toLowerCase() === "false_hopes") {
+            say(`JERRI`);
+        } else if (user.username.toLowerCase() === "alfierules") {
+            say(`ALFRED THE THIRD`);
+        } else if (user.username.toLowerCase() === "jessicaonrs") {
+            say(`JESSICA`);
+        } else if (user.username.toLowerCase() === "hazey7893") {
+            say(`JAMIE`);
+        } else if (user.username.toLowerCase() === "settingtrends") {
+            say(`ERIC haHAA`);
+        } else {
+            say(`${user.userame.toUpperCase()}`);
+        }
     }
     if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
         topUsers = _.filter(topUsers, (topUser) => {
