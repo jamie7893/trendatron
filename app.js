@@ -42,7 +42,7 @@ client.on('connected', (address, port) => {
 
 client.on('chat', (channel, user, message, self) => {
     let a = (user.username.toLowerCase() === "settingtrends");
-    if (message.search("eric") !== -1) {
+    if (message.toLowerCase().search("eric") !== -1) {
         if (user.username.toLowerCase() === "quakerrs") {
             say(`CHRIS`);
         } else if (user.username.toLowerCase() === "false_hopes") {
@@ -288,19 +288,13 @@ client.on('chat', (channel, user, message, self) => {
                         console.log(err);
                     } else {
                         jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-                            if (lastMsg !== `@${fd.user} has ${fd.points} Trend Tokens!`) {
-                                client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
-                                lastMsg = `@${fd.user} has ${fd.points} Trend Tokens!`;
-                            }
+                            say(`@${fd.user} has ${fd.points} Trend Tokens!`);
                         });
                     }
                 });
 
             } else {
-                if (lastMsg !== `@${fd.user} has ${fd.points} Trend Tokens!`) {
-                    client.say("SettingTrends", `@${fd.user} has ${fd.points} Trend Tokens!`);
-                    lastMsg = `@${fd.user} has ${fd.points} Trend Tokens!`;
-                }
+                say(`@${fd.user} has ${fd.points} Trend Tokens!`);
             }
         });
     }
@@ -571,8 +565,10 @@ function getTopUsers() {
 
 function say(message) {
     if (lastMsg !== message) {
-        client.say("SettingTrends", `${message}`);
-        lastMsg = message;
+          lastMsg = message;
+        setTimeout(() => {
+            client.say("SettingTrends", `${message}`);
+        }, 800);
     }
 }
 
