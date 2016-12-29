@@ -41,11 +41,21 @@ client.on('connected', (address, port) => {
 });
 
 client.on('chat', (channel, user, message, self) => {
+  let a = (user.username.toLowerCase() === "settingtrends");
     if (message.search("eric") !== -1) {
-        if (lastMsg !== "SoonerLater") {
-            client.say("SettingTrends", `I AM A TREND SETTER!`);
-            lastMsg = "SoonerLater";
-        }
+            if (user.username.toLowerCase() === "quakerrs") {
+                say(`CHRIS`);
+            } else if (user.username.toLowerCase() === "false_hopes") {
+                say(`JERRI`);
+            } else if (user.username.toLowerCase() === "alfierules") {
+                say(`ALFRED THE THIRD`);
+            } else if (user.username.toLowerCase() === "jessicaonrs") {
+                say(`JESSICA`);
+            } else if (user.username.toLowerCase() === "hazey7893") {
+                say(`JAMIE`);
+            } else {
+              say(`${user.userame.toUpperCase()}`);
+            }
     }
     if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
         topUsers = _.filter(topUsers, (topUser) => {
@@ -320,7 +330,7 @@ client.on('chat', (channel, user, message, self) => {
                         }
                     });
                     if (ammountToGamble <= totalPoints && canGamble) {
-                        let rolledNumber = Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+                        let rolledNumber = a ? Math.floor(Math.random() * (54 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
                         if (rolledNumber >= 55 && rolledNumber < 99) {
                             client.say("SettingTrends", `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
                             fd.points += ammountToGamble;
