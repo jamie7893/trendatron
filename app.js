@@ -56,7 +56,7 @@ client.on('chat', (channel, user, message, self) => {
         } else if (user.username.toLowerCase() === "settingtrends") {
             say(`ERIC haHAA`);
         } else {
-            say(`${user.userame.toUpperCase()}`);
+            say(`${user.username.toUpperCase()}`);
         }
     }
     if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
