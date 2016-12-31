@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"git pull && npm install\"  \"git add -A\" \"git commit -m 'eric'\" \"git push\" \"forever start app.js\"",
+    "start": "concurrently \"git pull\" \"npm install\"  \"git add -A\" \"git commit -m 'eric'\" \"git push\" \"forever start app.js\"",
     "stop": "concurrently \"git pull\" \"forever stop app.js\" \"git add -A\" \"git commit -m 'eric'\" \"git push\""
   },
   "author": "",
