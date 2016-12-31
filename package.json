@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm install && git add -A && git commit -m 'From' && git push && git pull && forever start ./app.js",
-    "stop": "forever stop app.js && git add -A && git commit -m 'From' && git push"
+    "start": "git pull && npm install && git add -A && git commit -m 'From' && git push && forever start ./app.js",
+    "stop": "git pull && forever stop app.js && git add -A && git commit -m 'From' && git push"
   },
   "author": "",
   "license": "ISC",
