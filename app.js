@@ -22,6 +22,38 @@ let tmi = require('tmi.js'),
 
 
     client = new tmi.client(options);
+const process = require('process'),
+    util = require('util');
+    let today = new Date(),
+        dd = today.getDate(),
+        mm = today.getMonth() + 1,
+        yyyy = today.getFullYear(),
+        files = fs.readdirSync('./logs/'),
+        log_file_err = fs.createWriteStream(__dirname + `/logs/${yyyy}${mm}${dd}`, {
+    flags: 'a'
+});
+
+var filesAsNumbers = _.map(files, (file) => {
+  return parseInt(file, 10);
+});
+
+function sortNumber(a,b) {
+    return a - b;
+}
+
+filesAsNumbers.sort(sortNumber);
+
+_.each(filesAsNumbers, (file, i) => {
+  if (i > 14) {
+    fs.unlink(`./logs/${file.toString()}`);
+  }
+});
+
+
+process.on('uncaughtException', function(err) {
+    console.log('Caught exception: ' + err);
+    log_file_err.write(util.format('Caught exception: ' + err) + '\n');
+});
 
 client.connect();
 
@@ -41,6 +73,9 @@ client.on('connected', (address, port) => {
 });
 
 client.on('chat', (channel, user, message, self) => {
+    if (message.slice(0, 1) === "!") {
+        log_file_err.write(util.format(`${user.username}:${message}`) + '\n');
+    }
     let a = (user.username.toLowerCase() === "settingtrends");
     if (message.toLowerCase().search("eric") !== -1) {
         if (user.username.toLowerCase() === "quakerrs") {
@@ -565,7 +600,7 @@ function getTopUsers() {
 
 function say(message) {
     if (lastMsg !== message) {
-          lastMsg = message;
+        lastMsg = message;
         setTimeout(() => {
             client.say("SettingTrends", `${message}`);
         }, 800);
