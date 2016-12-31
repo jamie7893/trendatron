@@ -5,12 +5,13 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "git pull && npm install && git add -A && git commit -m 'From' && git push && forever start ./app.js",
-    "stop": "git pull && forever stop app.js && git add -A && git commit -m 'From' && git push"
+    "start": "concurrently \"git pull && npm install\"  \"git add -A\" \"git commit -m 'eric'\" \"git push\" \"forever start app.js\"",
+    "stop": "concurrently \"git pull\" \"forever stop app.js\" \"git add -A\" \"git commit -m 'eric'\" \"git push\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "concurrently": "^3.1.0",
     "forever": "^0.15.3",
     "fs": "0.0.1-security",
     "http": "0.0.0",
