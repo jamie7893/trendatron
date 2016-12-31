@@ -394,7 +394,7 @@ client.on('chat', (channel, user, message, self) => {
                                                 ticketNumbers = currentUser.tickets;
                                             }
                                         });
-                                        lottery.newPot += totalCost * 0.5;
+                                        lottery.newPot += parseInt(totalCost * 0.5, 10);
                                         jsonfile.writeFile(`lottery.json`, fd, (err) => {
                                             if (err) {
                                                 console.log(err);
@@ -409,7 +409,7 @@ client.on('chat', (channel, user, message, self) => {
                                         let newUser = {};
                                         newUser.username = user.username;
                                         newUser.tickets = [];
-                                        lottery.newPot += totalCost * 0.5;
+                                        lottery.newPot += parseInt(totalCost * 0.5, 10);
                                         for (var i = numberOfTickets; i > 0; i--) {
                                             newUser.tickets.push(getTicketNumber());
                                         }
@@ -471,7 +471,7 @@ function doLotteryNow() {
                         cosole.log(err);
                     } else {
                         let winningPot = fd.pot;
-                        fd.pot = 5000 + lottery.newPot;
+                        fd.pot = 5000 + parseInt(lottery.newPot, 10);
                         fd.users = [];
                         say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
@@ -482,7 +482,7 @@ function doLotteryNow() {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        fd.points += winningPot;
+                                        fd.points += parseInt(winningPot, 10);
                                         jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
                                             if (err) {
                                                 console.log(err);
@@ -503,7 +503,7 @@ function doLotteryNow() {
                         console.log(err);
                     } else {
                         let winningPot = fd.pot;
-                        fd.pot = 5000 + lottery.newPot;
+                        fd.pot = 5000 + parseInt(lottery.newPot, 10);
                         fd.users = [];
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                             if (err) {
@@ -515,7 +515,7 @@ function doLotteryNow() {
                                         if (err) {
                                             console.log(err);
                                         } else {
-                                            fd.points += Math.floor(winningPot / winners.length);
+                                            fd.points += parseInt(Math.floor(winningPot / winners.length, 10));
                                             jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
                                                 if (err) {
                                                     console.log(err);
@@ -536,7 +536,7 @@ function doLotteryNow() {
                 if (err) {
                     console.log(err);
                 } else {
-                    fd.pot += lottery.newPot;
+                    fd.pot += parseInt(lottery.newPot, 10);
                     let thePot = fd.pot;
                     fd.users = [];
                     jsonfile.writeFile(`./lottery.json`, fd, (err) => {
