@@ -24,29 +24,29 @@ let tmi = require('tmi.js'),
     client = new tmi.client(options);
 const process = require('process'),
     util = require('util');
-    let today = new Date(),
-        dd = today.getDate(),
-        mm = today.getMonth() + 1,
-        yyyy = today.getFullYear(),
-        files = fs.readdirSync('./logs/'),
-        log_file_err = fs.createWriteStream(__dirname + `/logs/${yyyy}${mm}${dd}`, {
-    flags: 'a'
-});
+let today = new Date(),
+    dd = today.getDate(),
+    mm = today.getMonth() + 1,
+    yyyy = today.getFullYear(),
+    files = fs.readdirSync('./logs/'),
+    log_file_err = fs.createWriteStream(__dirname + `/logs/${yyyy}${mm}${dd}`, {
+        flags: 'a'
+    });
 
 var filesAsNumbers = _.map(files, (file) => {
-  return parseInt(file, 10);
+    return parseInt(file, 10);
 });
 
-function sortNumber(a,b) {
+function sortNumber(a, b) {
     return a - b;
 }
 
 filesAsNumbers.sort(sortNumber);
 
 _.each(filesAsNumbers, (file, i) => {
-  if (i > 14) {
-    fs.unlink(`./logs/${file.toString()}`);
-  }
+    if (i > 14) {
+        fs.unlink(`./logs/${file.toString()}`);
+    }
 });
 
 
@@ -62,14 +62,14 @@ let checkTrendTokens = [],
     alreadyGambled = [],
     waitingToTransfer = [],
     topUsers = [],
+    messageDelay = 0,
     stream,
     lastMsg,
     lottery = {};
-lottery.users = [];
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+    say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -102,8 +102,7 @@ client.on('chat', (channel, user, message, self) => {
                 return a.viewingPoints < b.viewingPoints ? 1 : -1;
             })
             .slice(0, 10);
-        if (lastMsg !== "leaderboard") {
-            client.say("SettingTrends", `
+        say(`
               #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |
               #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |
               #3 ${top10[2].user} Score: ${top10[2].viewingPoints} |
@@ -114,8 +113,6 @@ client.on('chat', (channel, user, message, self) => {
               #8 ${top10[7].user} Score: ${top10[7].viewingPoints} |
               #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |
               #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |`);
-        }
-        lastMsg = "leaderboard";
     }
     if (message.slice(0, 6) === "!bonus") {
         jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
@@ -140,15 +137,9 @@ client.on('chat', (channel, user, message, self) => {
                                     console.log(err);
                                 } else {
                                     if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                                        }
+                                        say(`@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
                                     } else {
-                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
-                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
-                                        }
+                                        say(`@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
                                     }
                                 }
                             });
@@ -163,15 +154,9 @@ client.on('chat', (channel, user, message, self) => {
                                     console.log(err);
                                 } else {
                                     if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`) {
-                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`;
-                                        }
+                                        say(`@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
                                     } else {
-                                        if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`) {
-                                            client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
-                                            lastMsg = `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`;
-                                        }
+                                        say(`@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
                                     }
                                 }
                             });
@@ -185,10 +170,7 @@ client.on('chat', (channel, user, message, self) => {
         if (message.split(" ")[1]) {
             jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                 if (err) {
-                    if (lastMsg !== `Check that username SoonerLater!`) {
-                        client.say("SettingTrends", `Check that username SoonerLater!`);
-                        lastMsg = `Check that username SoonerLater!`;
-                    }
+                    say(`Check that username SoonerLater!`);
                 } else {
                     fd.supermod = true;
                     jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
@@ -196,10 +178,7 @@ client.on('chat', (channel, user, message, self) => {
                             console.log(err);
                         }
                     });
-                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`) {
-                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`);
-                        lastMsg = `@${message.split(" ")[1].toLowerCase()} is now a Supermod!`;
-                    }
+                    say(`@${message.split(" ")[1].toLowerCase()} is now a Supermod!`);
                 }
             });
         }
@@ -208,10 +187,7 @@ client.on('chat', (channel, user, message, self) => {
         if (message.split(" ")[1]) {
             jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
                 if (err) {
-                    if (lastMsg !== `Check that username SoonerLater!`) {
-                        client.say("SettingTrends", `Check that username SoonerLater!`);
-                        lastMsg = `Check that username SoonerLater!`;
-                    }
+                    say(`Check that username Setting!`);
                 } else {
                     fd.supermod = false;
                     jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
@@ -219,10 +195,7 @@ client.on('chat', (channel, user, message, self) => {
                             console.log(err);
                         }
                     });
-                    if (lastMsg !== `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`) {
-                        client.say("SettingTrends", `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`);
-                        lastMsg = `@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`;
-                    }
+                    say(`@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`);
                 }
             });
         }
@@ -264,11 +237,7 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         });
                     });
-                    if (lastMsg !== `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`) {
-                        client.say("SettingTrends", `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`);
-                        lastMsg = `Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`;
-                    }
-
+                    say(`Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`);
                 });
             };
 
@@ -302,12 +271,9 @@ client.on('chat', (channel, user, message, self) => {
         jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
             if (!fd.transferd) {
                 waitingToTransfer.push(user.username.toLowerCase());
-                client.say("SettingTrends", `@${fd.user} type !points to transfer your points! You can only do this once!`);
+                say(`@${fd.user} type !points to transfer your points! You can only do this once!`);
             } else {
-                if (lastMsg !== `@${fd.user} you have already used your transfer!`) {
-                    client.say("SettingTrends", `@${fd.user} you have already used your transfer!`);
-                    lastMsg = `@${fd.user} you have already used your transfer!`;
-                }
+                say(`@${fd.user} you have already used your transfer!`);
             }
         });
     }
@@ -348,10 +314,7 @@ client.on('chat', (channel, user, message, self) => {
             jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
                 if (err) {
                     // say you have no points
-                    if (lastMsg !== `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`) {
-                        client.say("SettingTrends", `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`);
-                        lastMsg = `@${user.username} you don't have ${ammountToGamble} Trend Tokens!`;
-                    }
+                    say(`@${user.username} you don't have ${ammountToGamble} Trend Tokens!`);
                 } else {
                     let totalPoints = fd.points;
                     canGamble = true;
@@ -363,7 +326,7 @@ client.on('chat', (channel, user, message, self) => {
                     if (ammountToGamble <= totalPoints && canGamble) {
                         let rolledNumber = a ? Math.floor(Math.random() * (54 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
                         if (rolledNumber >= 55 && rolledNumber < 99) {
-                            client.say("SettingTrends", `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
+                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
                             fd.points += ammountToGamble;
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
@@ -371,7 +334,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                             });
                         } else if (rolledNumber >= 99) {
-                            client.say("SettingTrends", `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
+                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
                             fd.points += (ammountToGamble * 2);
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
@@ -379,7 +342,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                             });
                         } else {
-                            client.say("SettingTrends", `@${user.username.toLowerCase()} rolled a ${rolledNumber} and lost ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
+                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and lost ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
                             fd.points -= ammountToGamble;
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
@@ -392,15 +355,9 @@ client.on('chat', (channel, user, message, self) => {
                             alreadyGambled.splice(0);
                         }, 60000 * 5);
                     } else if (ammountToGamble > totalPoints) {
-                        if (lastMsg !== `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`) {
-                            client.say("SettingTrends", `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
-                            lastMsg = `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`;
-                        }
+                        say(`@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
                     } else if (!canGamble) {
-                        if (lastMsg !== `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`) {
-                            client.say("SettingTrends", `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
-                            lastMsg = `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`;
-                        }
+                        say(`@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
                     }
                 }
             });
@@ -409,7 +366,7 @@ client.on('chat', (channel, user, message, self) => {
     if (message.slice(0, 7) === "!ticket") {
         if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
             let numberOfTickets = parseInt(message.split(" ")[1], 10),
-                totalCost = 10 * numberOfTickets;
+                totalCost = 5 * numberOfTickets;
             jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
                 if (err) {
                     say(`${user.username} you don't have enough Trend Tokens!`);
@@ -423,32 +380,57 @@ client.on('chat', (channel, user, message, self) => {
                             if (err) {
                                 console.log(err);
                             } else {
-                                let hasTickets = _.some(lottery.users, (currentUsers) => {
-                                        return currentUsers.username === user.username;
-                                    }),
-                                    ticketNumbers;
-                                if (hasTickets) {
-                                    _.each(lottery.users, (currentUsers) => {
-                                        if (currentUsers.username === user.username) {
-                                            for (var i = numberOfTickets; i > 0; i--) {
-                                                currentUsers.tickets.push(getTicketNumber());
+                                jsonfile.readFile(`lottery.json`, (err, fd) => {
+                                    let hasTickets = _.some(fd.users, (currentUser) => {
+                                            return currentUser.username === user.username;
+                                        }),
+                                        ticketNumbers;
+                                    if (hasTickets) {
+                                        _.each(fd.users, (currentUser, j) => {
+                                            if (currentUser.username === user.username) {
+                                                for (var i = numberOfTickets; i > 0; i--) {
+                                                    fd.users[j].tickets.push(getTicketNumber());
+                                                }
+                                                ticketNumbers = currentUser.tickets;
                                             }
-                                            ticketNumbers = currentUsers.tickets;
+                                        });
+                                        lottery.newPot += totalCost * 0.5;
+                                        jsonfile.writeFile(`lottery.json`, fd, (err) => {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                        });
+                                        if (ticketNumbers.length < 50) {
+                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
+                                        } else {
+                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Some of your numbers are ${ticketNumbers.slice(0, 50).toString()}...`);
                                         }
-                                    });
-                                    lottery.newPot += totalCost * 0.5;
-                                    say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
-                                } else {
-                                    let newUser = {};
-                                    newUser.username = user.username;
-                                    newUser.tickets = [];
-                                    lottery.newPot += totalCost * 0.5;
-                                    for (var i = numberOfTickets; i > 0; i--) {
-                                        newUser.tickets.push(getTicketNumber());
+                                    } else {
+                                        let newUser = {};
+                                        newUser.username = user.username;
+                                        newUser.tickets = [];
+                                        lottery.newPot += totalCost * 0.5;
+                                        for (var i = numberOfTickets; i > 0; i--) {
+                                            newUser.tickets.push(getTicketNumber());
+                                        }
+
+                                        fd.users.push(newUser);
+                                        jsonfile.writeFile(`lottery.json`, fd, (err) => {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                        });
+                                        if (newUser.tickets.length === 1) {
+                                            say(`${user.username} now has ${newUser.tickets.length} lottery ticket! Your number is ${newUser.tickets.toString()}`);
+                                        } else if (newUser.tickets.length < 50) {
+                                            say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
+                                        } else {
+                                            say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Some of your numbers are ${newUser.tickets.slice(0, 50).toString()}...`);
+                                        }
                                     }
-                                    lottery.users.push(newUser);
-                                    say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
-                                }
+                                });
+
+
                             }
                         });
                     }
@@ -472,108 +454,104 @@ client.on('chat', (channel, user, message, self) => {
 });
 
 function doLotteryNow() {
-    let winningNumber = getTicketNumber(),
-        winners = [];
-    _.each(lottery.users, (currentUsers) => {
-        _.each(currentUsers.tickets, (ticket) => {
-            if (ticket === winningNumber) {
-                winners.push(currentUsers.username);
-            }
+    jsonfile.readFile(`lottery.json`, (err, fd) => {
+        let winningNumber = getTicketNumber(),
+            winners = [];
+        _.each(fd.users, (currentUsers) => {
+            _.each(currentUsers.tickets, (ticket) => {
+                if (ticket === winningNumber) {
+                    winners.push(currentUsers.username);
+                }
+            });
         });
-    });
-    if (winners.length) {
-        if (winners.length === 1) {
-            jsonfile.readFile(`./lottery.json`, (err, fd) => {
-                if (err) {
-                    cosole.log(err);
-                } else {
-                    let winningPot = fd.pot;
-                    fd.pot = 5000 + lottery.newPot;
-                    say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
-                    jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            jsonfile.readFile(`viewers/${winners[0]}`, (err, fd) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    fd.points += winningPot;
-                                    jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
+        if (winners.length) {
+            if (winners.length === 1) {
+                jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                    if (err) {
+                        cosole.log(err);
+                    } else {
+                        let winningPot = fd.pot;
+                        fd.pot = 5000 + lottery.newPot;
+                        fd.users = [];
+                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
+                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                jsonfile.readFile(`viewers/${winners[0]}`, (err, fd) => {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        fd.points += winningPot;
+                                        jsonfile.writeFile(`viewers/${winners[0]}`, fd, (err) => {
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                lottery.newPot = 0;
+                                                resetLotteryPot();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            } else {
+                jsonfile.readFile(`./lottery.json`, (err, fd) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        let winningPot = fd.pot;
+                        fd.pot = 5000 + lottery.newPot;
+                        fd.users = [];
+                        jsonfile.writeFile(`./lottery.json`, fd, (err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
+                                _.each(winners, (winner) => {
+                                    jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
                                         if (err) {
                                             console.log(err);
                                         } else {
-                                            lottery.users = [];
-                                            lottery.newPot = 0;
-                                            resetLotteryPot();
+                                            fd.points += Math.floor(winningPot / winners.length);
+                                            jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
+                                                if (err) {
+                                                    console.log(err);
+                                                }
+                                            });
                                         }
                                     });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-
+                                });
+                                lottery.newPot = 0;
+                                resetLotteryPot();
+                            }
+                        });
+                    }
+                });
+            }
         } else {
             jsonfile.readFile(`./lottery.json`, (err, fd) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    let winningPot = fd.pot;
-                    fd.pot = 5000 + lottery.newPot;
+                    fd.pot += lottery.newPot;
+                    let thePot = fd.pot;
+                    fd.users = [];
                     jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                         if (err) {
                             console.log(err);
                         } else {
-                            say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
-                            _.each(winners, (winner) => {
-                                jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
-                                    if (err) {
-                                        console.log(err);
-                                    } else {
-                                        fd.points += Math.floor(winningPot / winners.length);
-                                        jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
-                                            if (err) {
-                                                console.log(err);
-                                            }
-                                        });
-                                    }
-                                });
-
-                            });
-
-                            lottery.users = [];
+                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
                             lottery.newPot = 0;
-                            resetLotteryPot();
+                            say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
             });
         }
-    } else {
-        jsonfile.readFile(`./lottery.json`, (err, fd) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(lottery.newPot);
-                fd.pot += lottery.newPot;
-                let thePot = fd.pot;
-                jsonfile.writeFile(`./lottery.json`, fd, (err) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
-                        lottery.users = [];
-                        lottery.newPot = 0;
-                        say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
-                    }
-                });
-            }
-
-        });
-    }
-
+    });
 }
 
 function doLottery() {
@@ -601,9 +579,11 @@ function getTopUsers() {
 function say(message) {
     if (lastMsg !== message) {
         lastMsg = message;
+        messageDelay += 800;
         setTimeout(() => {
             client.say("SettingTrends", `${message}`);
-        }, 800);
+            messageDelay -= 800;
+        }, messageDelay);
     }
 }
 
@@ -612,13 +592,13 @@ function getTicketNumber() {
 }
 
 function resetLotteryPot() {
-    jsonfile.readFile(`lottery`, (err, fd) => {
-        fd.pot = 5000;
-        jsonfile.writeFile(`lottery`, fd, (err) => {
+    jsonfile.readFile(`lottery.json`, (err, fd) => {
+        fd.pot = 10000;
+        jsonfile.writeFile(`lottery.json`, fd, (err) => {
             if (err) {
                 console.log(err);
             } else {
-                say(`The lottery drawing will begin in 30 minutes! Tickets cost 10 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
             }
         });
     });
