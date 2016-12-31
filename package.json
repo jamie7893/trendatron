@@ -4,17 +4,22 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm install && git add -A && git commit -m 'From' && git push && git pull && forever start ./app.js",
+    "stop": "forever stop app.js && git add -A && git commit -m 'From' && git push"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "forever": "^0.15.3",
     "fs": "0.0.1-security",
     "http": "0.0.0",
     "https": "^1.0.0",
     "jsonfile": "^2.4.0",
     "lodash": "^4.17.2",
     "pem": "^1.8.3",
-    "tmi.js": "^1.1.2"
+    "process": "^0.11.9",
+    "tmi.js": "^1.1.2",
+    "util": "^0.10.3"
   }
 }
