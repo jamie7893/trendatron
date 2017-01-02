@@ -77,6 +77,11 @@ client.on('chat', (channel, user, message, self) => {
         log_file_err.write(util.format(`${user.username}:${message}`) + '\n');
     }
     let a = (user.username.toLowerCase() === "settingtrends");
+
+    if (message.slice(0, 13) === "!trendsetters") {
+        say(`https://clips.twitch.tv/settingtrends/ElatedFinchDuDudu`);
+    }
+
     if (message.toLowerCase().search("eric") !== -1) {
         if (user.username.toLowerCase() === "quakerrs") {
             say(`CHRIS`);
