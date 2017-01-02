@@ -88,6 +88,8 @@ client.on('chat', (channel, user, message, self) => {
             say(`JESSICA`);
         } else if (user.username.toLowerCase() === "hazey7893") {
             say(`JAMIE`);
+        } else if (user.username.toLowerCase() === "itsounds" || user.username.toLowerCase() === "ltsounds") {
+            say(`JOSH`);
         } else if (user.username.toLowerCase() === "settingtrends") {
             say(`ERIC haHAA`);
         } else {
