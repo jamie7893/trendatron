@@ -564,7 +564,7 @@ function doLotteryNow() {
 function doLottery() {
     setInterval(() => {
         doLotteryNow();
-    }, 60000 * 30);
+    }, 60000 * 15);
 }
 
 function getTopUsers() {
