@@ -69,7 +69,7 @@ let checkTrendTokens = [],
 lottery.newPot = 0;
 
 client.on('connected', (address, port) => {
-    say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+    say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -97,6 +97,8 @@ client.on('chat', (channel, user, message, self) => {
             say(`JOSH`);
         } else if (user.username.toLowerCase() === "settingtrends") {
             say(`ERIC haHAA`);
+        } else if (user.username.toLowerCase() === "itsmalia") {
+            say(`AMANDA`);
         } else {
             say(`${user.username.toUpperCase()}`);
         }
@@ -371,7 +373,7 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
     if (message.slice(0, 7) === "!ticket") {
-        if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
+        if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) > -1) {
             let numberOfTickets = parseInt(message.split(" ")[1], 10),
                 totalCost = 5 * numberOfTickets;
             jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
@@ -552,7 +554,7 @@ function doLotteryNow() {
                         } else {
                             say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
                             lottery.newPot = 0;
-                            say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                            say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
@@ -605,7 +607,7 @@ function resetLotteryPot() {
             if (err) {
                 console.log(err);
             } else {
-                say(`The lottery drawing will begin in 30 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
             }
         });
     });
