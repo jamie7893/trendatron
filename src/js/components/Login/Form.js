@@ -1,7 +1,7 @@
 'use strict';
 import React, { PropTypes as T } from 'react';
 import {ButtonToolbar, Button} from 'react-bootstrap';
-
+import axios from 'axios';
 export class Form extends React.Component {
   _login() {
       window.location = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=xbp0my875pnzs1mb2hgre3ohmjlqnx&redirect_uri=http%3A%2F%2Flocalhost%3A1738%2Fauth%2Ftwitch&scope=user_read";

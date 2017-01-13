@@ -91,6 +91,9 @@ sequelize.sync().then(function(res) {
     Viewer.sync();
     Channel.sync();
     // passport.authenticate('twitch-token')
+   app.get('/viewer', (req, res) => {
+     res.send(req.session.viewer);
+   });
     app.get('/auth/twitch', function(req, res) {
       let code = req.query.code;
   axios.post('https://api.twitch.tv/kraken/oauth2/token', {
@@ -108,8 +111,27 @@ sequelize.sync().then(function(res) {
             "Authorization": `OAuth ${token}`
         }
     }).then(function(response) {
-        console.log(response.data);
-
+        let viewer = response.data;
+        Viewer.findOne({
+            where: {
+                email: viewer.email
+            }
+          }).then((foundViewer) => {
+            if (foundViewer) {
+              req.session.viewer = foundViewer.dataValues;
+              res.redirect('/#/profile');
+            } else {
+              let newViewer = {
+                email: viewer.email,
+                display: viewer.display_name,
+                username: viewer.name
+              };
+              Viewer.create(newViewer).then((viewer) => {
+                req.session.viewer = viewer.dataValues;
+                res.redirect('/#/profile');
+              });
+            }
+          });
     }).catch(function(error) {
         console.log(error);
     });
