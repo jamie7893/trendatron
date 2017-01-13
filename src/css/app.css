@@ -1,0 +1,14 @@
+.login-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: calc(-1 * calc(50VH / 2));
+    margin-left: calc(-1 * calc(50VW / 2));
+    width: 50VW;
+    height: 50VH;
+    background: #979C9C;
+}
+
+.login-header {
+    text-align: center;
+}

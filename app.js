@@ -1,3 +1,5 @@
+'use strict';
+
 let tmi = require('tmi.js'),
     fs = require('fs'),
     http = require('http'),
@@ -17,7 +19,7 @@ let tmi = require('tmi.js'),
             username: "trendatron",
             password: config.pass
         },
-        channels: ["settingtrends"]
+        channels: ["hazey7893"]
     },
 
 
@@ -252,7 +254,7 @@ client.on('chat', (channel, user, message, self) => {
 
             http.request({
                 host: "tmi.twitch.tv",
-                path: "/group/user/settingtrends/chatters"
+                path: "/group/user/hazey7893/chatters"
             }, callbackBonus).end();
         }
     }
@@ -590,7 +592,7 @@ function say(message) {
         lastMsg = message;
         messageDelay += 800;
         setTimeout(() => {
-            client.say("SettingTrends", `${message}`);
+            client.say("Hazey7893", `${message}`);
             messageDelay -= 800;
         }, messageDelay);
     }
@@ -658,7 +660,7 @@ function getUsers() {
     };
     http.request({
         host: "tmi.twitch.tv",
-        path: "/group/user/settingtrends/chatters"
+        path: "/group/user/hazey7893/chatters"
     }, callback).end();
     setTimeout(() => {
         getUsers();
@@ -682,7 +684,7 @@ function checkOnline() {
     };
     https.request({
         host: "api.twitch.tv",
-        path: "/kraken/streams/settingtrends?client_id=tlbwsx70hrom3jqf10dq54qj0pf2yc7"
+        path: "/kraken/streams/hazey7893?client_id=tlbwsx70hrom3jqf10dq54qj0pf2yc7"
     }, callback).end();
 }
 getUsers();
