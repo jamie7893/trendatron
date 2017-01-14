@@ -28,6 +28,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: false
+    },
+    lottery: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: false
+    },
+    tickets: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      unique: false
     }
   }, {
     tableName: 'channel',

@@ -6,6 +6,7 @@ let tmi = require('tmi.js'),
     https = require('https'),
     _ = require('lodash'),
     jsonfile = require('jsonfile'),
+    Sequelize = require('sequelize'),
     config = require('./config.js'),
     options = {
         options: {
@@ -22,18 +23,19 @@ let tmi = require('tmi.js'),
         channels: ["hazey7893"]
     },
 
-
     client = new tmi.client(options);
 const process = require('process'),
+    sequelize = new Sequelize('postgres://postgres:admin@localhost:3000/postgres'),
     util = require('util');
+
 let today = new Date(),
     dd = today.getDate(),
     mm = today.getMonth() + 1,
     yyyy = today.getFullYear(),
+    Viewer = sequelize.import ('./model/viewer.js'),
+    Channel = sequelize.import ('./model/channel.js'),
     files = fs.readdirSync('./logs/'),
-    log_file_err = fs.createWriteStream(__dirname + `/logs/${yyyy}${mm}${dd}`, {
-        flags: 'a'
-    });
+    log_file_err = fs.createWriteStream(__dirname + `/logs/${yyyy}${mm}${dd}`, {flags: 'a'});
 
 var filesAsNumbers = _.map(files, (file) => {
     return parseInt(file, 10);
@@ -51,7 +53,6 @@ _.each(filesAsNumbers, (file, i) => {
     }
 });
 
-
 process.on('uncaughtException', function(err) {
     console.log('Caught exception: ' + err);
     log_file_err.write(util.format('Caught exception: ' + err) + '\n');
@@ -67,6 +68,7 @@ let checkTrendTokens = [],
     messageDelay = 0,
     stream,
     lastMsg,
+    checkedUsers = [],
     lottery = {};
 lottery.newPot = 0;
 
@@ -75,6 +77,73 @@ client.on('connected', (address, port) => {
 });
 
 client.on('chat', (channel, user, message, self) => {
+    function checkAndCreateUser(user) {
+        if (!checkedUsers.includes(user.username)) {
+            Viewer.findOne({
+                where: {
+                    username: user.username.toLowerCase()
+                }
+            }).then((found) => {
+                if (!found) {
+                    let newUser = {
+                        username: user.username.toLowerCase(),
+                        display: user["display-name"]
+                    };
+                    Viewer.create(newUser).then((newUser) => {
+                        newUser = newUser.dataValues;
+                        Viewer.findOne({
+                            where: {
+                                username: channel.substring(1).toLowerCase()
+                            }
+                        }).then((currentStream) => {
+                            currentStream = currentStream.dataValues;
+                            let joinChannel = {
+                                channelId: currentStream.id,
+                                viewerId: newUser.id,
+                                role: 0,
+                                totatlPoints: 1,
+                                currentPoints: 1,
+                                lottery: 15000,
+                                tickets: ""
+                            };
+                            Channel.create(joinChannel);
+                        });
+                    });
+                } else {
+                  Viewer.findOne({
+                    where: {
+                      username: channel.substring(1).toLowerCase()
+                    }
+                  }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                      where: {
+                        channelId: foundChannel.id,
+                        viewerId: found.id
+                    }
+                  }).then((foundCurrent) => {
+                    if (!foundCurrent) {
+                      let joinChannel = {
+                          channelId: foundChannel.id,
+                          viewerId: found.id,
+                          role: 0,
+                          totalPoints: 1,
+                          currentPoints: 1,
+                          lottery: 15000,
+                          tickets: ""
+                      };
+                      Channel.create(joinChannel);
+                    }
+                  });
+                });
+                }
+            });
+            checkedUsers.push(user.username);
+        }
+    }
+
+    checkAndCreateUser(user);
+
     if (message.slice(0, 1) === "!") {
         log_file_err.write(util.format(`${user.username}:${message}`) + '\n');
     }
@@ -105,14 +174,16 @@ client.on('chat', (channel, user, message, self) => {
             say(`${user.username.toUpperCase()}`);
         }
     }
+
     if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
         topUsers = _.filter(topUsers, (topUser) => {
-            return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot" && topUser.user !== "settingtrends";
+            return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot" && topUser.user !== "hazey7893";
         });
         var top10 = topUsers.sort(function(a, b) {
-                return a.viewingPoints < b.viewingPoints ? 1 : -1;
-            })
-            .slice(0, 10);
+            return a.viewingPoints < b.viewingPoints
+                ? 1
+                : -1;
+        }).slice(0, 10);
         say(`
               #1 ${top10[0].user} Score: ${top10[0].viewingPoints} |
               #2 ${top10[1].user} Score: ${top10[1].viewingPoints} |
@@ -125,328 +196,422 @@ client.on('chat', (channel, user, message, self) => {
               #9 ${top10[8].user} Score: ${top10[8].viewingPoints} |
               #10 ${top10[9].user} Score: ${top10[9].viewingPoints} |`);
     }
-    if (message.slice(0, 6) === "!bonus") {
-        jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
-            if (err) {
-                console.log(err);
-            } else {
-                if (fd.supermod && message.split(" ")[1]) {
-                    jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
-                        if (err) {
-                            let pointsToGive;
-                            if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                            } else {
-                                pointsToGive = 0 + parseInt(message.split(" ")[2], 10);
-                            }
-                            jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, {
-                                user: user.username.toLowerCase(),
-                                points: pointsToGive,
-                                viewingPoints: 0
-                            }, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                        say(`@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                    } else {
-                                        say(`@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
-                                    }
-                                }
-                            });
-                        } else {
-                            if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                fd.points += parseInt(message.split(" ")[2], 10);
-                            } else {
-                                fd.points += parseInt(message.split(" ")[2], 10);
-                            }
-                            jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                        say(`@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
-                                    } else {
-                                        say(`@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}! TriHard`);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-            }
+    if (message.split(" ")[0] === "!bonus") {
+        let checkUser = {
+            username: message.split(" ")[1].toLowerCase()
+        };
+        checkAndCreateUser({
+            username: message.split(" ")[1],
+            display: message.split(" ")[1]
         });
-    }
-    if (user.username === "settingtrends" && message.slice(0, 13) === "!givesupermod") {
-        if (message.split(" ")[1]) {
-            jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
-                if (err) {
-                    say(`Check that username SoonerLater!`);
-                } else {
-                    fd.supermod = true;
-                    jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
-                    say(`@${message.split(" ")[1].toLowerCase()} is now a Supermod!`);
+        Viewer.findOne({
+            where: {
+                username: user.username.toLowerCase()
+            }
+        }).then((currentViewer) => {
+            currentViewer = currentViewer.dataValues;
+            Viewer.findOne({
+                where: {
+                    username: channel.substring(1).toLowerCase()
                 }
-            });
-        }
-    }
-    if (user.username === "settingtrends" && message.slice(0, 15) === "!removesupermod") {
-        if (message.split(" ")[1]) {
-            jsonfile.readFile(`viewers/${message.split(" ")[1].toLowerCase()}`, (err, fd) => {
-                if (err) {
-                    say(`Check that username Setting!`);
-                } else {
-                    fd.supermod = false;
-                    jsonfile.writeFile(`viewers/${message.split(" ")[1].toLowerCase()}`, fd, (err) => {
-                        if (err) {
-                            console.log(err);
+            }).then((streamer) => {
+                streamer = streamer.dataValues;
+                Channel.findOne({
+                    where: {
+                        channelId: streamer.id,
+                        viewerId: currentViewer.id
+                    }
+                }).then((currentStream) => {
+                    currentStream = currentStream.dataValues;
+                    if (currentStream.role >= 1 && message.split(" ")[1]) {
+                        if (parseInt(message.split(" ")[2], 10)) {
+                            currentStream.currentPoints += parseInt(message.split(" ")[2], 10);
                         }
-                    });
-                    say(`@${message.split(" ")[1].toLowerCase()} is not a Supermod anymore!`);
-                }
-            });
-        }
-    }
-    if (user.username === "settingtrends" && message.slice(0, 9) === "!allbonus") {
-        if (parseInt(message.split(" ")[1], 10)) {
-            callbackBonus = function(response) {
-                var str = '';
 
-                //another chunk of data has been recieved, so append it to `str`
-                response.on('data', function(chunk) {
-                    str += chunk;
+                        Channel.update(currentStream, {
+                            where: {
+                                viewerId: currentStream.viewerId,
+                                channelId: currentStream.channelId
+                            }
+                        }).then((updated) => {
+                            if (currentViewer) {
+                                if (parseInt(message.split(" ")[2], 10) >= 0) {
+                                    say(`@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                } else {
+                                    say(`@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
+                                }
+                            }
+                        });
+
+                    }
                 });
+            });
+        });
 
-                //the whole response has been recieved, so we just print it out here
-                response.on('end', function() {
-                    let users = _.flattenDeep(_.map(JSON.parse(str), (group) => {
-                        return _.map(group, (user) => user);
-                    }));
-                    _.each(users, (user) => {
-                        jsonfile.readFile(`viewers/${user}`, (err, fd) => {
-                            if (err) {
-                                jsonfile.writeFile(`viewers/${user}`, {
-                                    user: user.username.toLowerCase(),
-                                    points: parseInt(message.split(" ")[1], 10),
-                                    viewingPoints: 0
-                                }, (err) => {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
-                            } else {
-                                fd.points += parseInt(message.split(" ")[1], 10);
-                                jsonfile.writeFile(`viewers/${user}`, fd, (err) => {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
+    }
+    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!givesupermod") {
+        if (message.split(" ")[1]) {
+            checkAndCreateUser({
+                username: message.split(" ")[1],
+                display: message.split(" ")[1]
+            });
+            Viewer.findOne({
+                where: {
+                    username: message.split(" ")[1]
+                }
+            }).then((foundViewer) => {
+                foundViewer = foundViewer.dataValues;
+                Viewer.findOne({
+                    where: {
+                        username: channel.substring(1).toLowerCase()
+                    }
+                }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                        where: {
+                            viewerId: foundViewer.id,
+                            channelId: foundChannel.id
+                        }
+                    }).then((foundViewerChannel) => {
+                        foundViewerChannel = foundViewerChannel.dataValues;
+                        foundViewerChannel.role = 1;
+                        Channel.update(foundViewerChannel, {
+                            where: {
+                                viewerId: foundViewer.id,
+                                channelId: foundChannel.id
+                            }
+                        }).then((done) => {
+                            if (done[0] === 1) {
+                                say(`@${message.split(" ")[1].toLowerCase()} is now a supermod!`);
                             }
                         });
                     });
-                    say(`Everyone has been given ${parseInt(message.split(" ")[1], 10)} Trend Tokens!`);
+                });
+            });
+        }
+    }
+    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!removesupermod") {
+        if (message.split(" ")[1]) {
+            checkAndCreateUser({
+                username: message.split(" ")[1],
+                display: message.split(" ")[1]
+            });
+            Viewer.findOne({
+                where: {
+                    username: message.split(" ")[1]
+                }
+            }).then((foundViewer) => {
+                foundViewer = foundViewer.dataValues;
+                Viewer.findOne({
+                    where: {
+                        username: channel.substring(1).toLowerCase()
+                    }
+                }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                        where: {
+                            viewerId: foundViewer.id,
+                            channelId: foundChannel.id
+                        }
+                    }).then((foundViewerChannel) => {
+                        foundViewerChannel = foundViewerChannel.dataValues;
+                        foundViewerChannel.role = 0;
+                        Channel.update(foundViewerChannel, {
+                            where: {
+                                viewerId: foundViewer.id,
+                                channelId: foundChannel.id
+                            }
+                        }).then((done) => {
+                            if (done[0] === 1) {
+                                say(`@${message.split(" ")[1].toLowerCase()} is not a supermod anymore!`);
+                            }
+                        });
+                    });
+                });
+            });
+        }
+    }
+    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!bonusall") {
+        if (parseInt(message.split(" ")[1], 10)) {
+            let callbackBonus = function(response) {
+                var str = '';
+                response.on('data', function(chunk) {
+                    str += chunk;
+                });
+                response.on('end', function() {
+                    let users = _.flattenDeep(_.map(JSON.parse(str), (group) => {
+                            return _.map(group, (user) => user);
+                        })),
+                        ammount = parseInt(message.split(" ")[1], 10);
+                    _.each(users, (user) => {
+                        checkAndCreateUser({username: user, display: user});
+                        givePoints(user, channel, ammount, `Everyone has been given ${ammount} Trend Tokens!`);
+                    });
                 });
             };
 
             http.request({
                 host: "tmi.twitch.tv",
-                path: "/group/user/hazey7893/chatters"
+                path: `/group/user/${channel.substring(1).toLowerCase()}/chatters`
             }, callbackBonus).end();
         }
     }
-    if (user["display-name"] === "RevloBot" && waitingToTransfer.length) {
-        _.each(waitingToTransfer, (userWaiting) => {
-            if (userWaiting.toLowerCase() === message.split(" ")[0].toLowerCase()) {
-                if (message.toLowerCase().search(userWaiting.toLowerCase()) !== -1 && message.toLowerCase().search("trend tokens") !== -1) {
-                    jsonfile.readFile(`viewers/${userWaiting}`, (err, fd) => {
-                        fd.points = fd.points + parseInt(message.split(" ")[2], 10);
-                        fd.transferd = true;
-                        jsonfile.writeFile(`viewers/${userWaiting}`, fd, (err) => {
-                            if (err) {
-                                console.log(err);
-                            }
-                        });
-                    });
+
+    if (message.split(" ")[0] === "!trendtokens") {
+        Viewer.findOne({
+            where: {
+                username: user.username
+            }
+        }).then((foundViewer) => {
+            foundViewer = foundViewer.dataValues;
+            Viewer.findOne({
+                where: {
+                    username: channel.substring(1).toLowerCase()
                 }
-            }
-        });
-        waitingToTransfer = _.filter(waitingToTransfer, (waitingPerson) => {
-            return waitingPerson !== message.split(" ")[0].toLowerCase();
-        });
-    }
-    if (message.slice(0, 9) === "!transfer") {
-        jsonfile.readFile(`viewers/${user.username.toLowerCase()}`, (err, fd) => {
-            if (!fd.transferd) {
-                waitingToTransfer.push(user.username.toLowerCase());
-                say(`@${fd.user} type !points to transfer your points! You can only do this once!`);
-            } else {
-                say(`@${fd.user} you have already used your transfer!`);
-            }
-        });
-    }
-    if (message.slice(0, 12) === "!trendtokens") {
-        jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-            if (err) {
-                jsonfile.writeFile(`viewers/${user.username.toLowerCase()}`, {
-                    user: user.username.toLowerCase(),
-                    points: 0,
-                    viewingPoints: 0
-                }, (err) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-                            say(`@${fd.user} has ${fd.points} Trend Tokens!`);
-                        });
+            }).then((foundChannel) => {
+                foundChannel = foundChannel.dataValues;
+                Channel.findOne({
+                    where: {
+                        viewerId: foundViewer.id,
+                        channelId: foundChannel.id
                     }
+                }).then((foundViewerChannel) => {
+                    foundViewerChannel = foundViewerChannel.dataValues;
+                    say(`@${user.username} has ${foundViewerChannel.currentPoints} Trend Tokens`);
                 });
-
-            } else {
-                say(`@${fd.user} has ${fd.points} Trend Tokens!`);
-            }
+            });
         });
     }
-    if (message.slice(0, 7) === "!gamble") {
-        if (message.slice(8).length && parseInt(message.slice(8), 10)) {
-            let ammountToGamble = parseInt(message.slice(8), 10),
+    if (message.split(" ")[0] === "!gamble") {
+        if (parseInt(message.split(" ")[1], 10)) {
+            let ammountToGamble = parseInt(message.split(" ")[1], 10),
                 canGamble = true;
-
             alreadyGambled.forEach((didGamble) => {
                 if (didGamble === user.username) {
                     canGamble = false;
                 }
             });
-
-            // gamble
-            jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-                if (err) {
-                    // say you have no points
-                    say(`@${user.username} you don't have ${ammountToGamble} Trend Tokens!`);
-                } else {
-                    let totalPoints = fd.points;
-                    canGamble = true;
-                    alreadyGambled.forEach((didGamble) => {
-                        if (didGamble === user.username) {
-                            canGamble = false;
+            Viewer.findOne({
+                where: {
+                    username: user.username
+                }
+            }).then((foundViewer) => {
+                foundViewer = foundViewer.dataValues;
+                Viewer.findOne({
+                    where: {
+                        username: channel.substring(1).toLowerCase()
+                    }
+                }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                        where: {
+                            viewerId: foundViewer.id,
+                            channelId: foundChannel.id
+                        }
+                    }).then((foundViewerChannel) => {
+                        foundViewerChannel = foundViewerChannel.dataValues;
+                        let totalPoints = foundViewerChannel.currentPoints;
+                        canGamble = true;
+                        alreadyGambled.forEach((didGamble) => {
+                            if (didGamble === user.username) {
+                                canGamble = false;
+                            }
+                        });
+                        if (ammountToGamble <= totalPoints && canGamble) {
+                            let rolledNumber = a
+                                ? Math.floor(Math.random() * (54 - 1 + 1)) + 1
+                                : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+                            if (rolledNumber >= 55 && rolledNumber < 99) {
+                                foundViewerChannel.currentPoints += ammountToGamble;
+                                Channel.update(foundViewerChannel, {
+                                    where: {
+                                        viewerId: foundViewer.id,
+                                        channelId: foundChannel.id
+                                    }
+                                }).then((done) => {
+                                    if (done[0] === 1) {
+                                        say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
+                                    }
+                                });
+                            } else if (rolledNumber >= 99) {
+                                foundViewerChannel.currentPoints += ammountToGamble * 2;
+                                Channel.update(foundViewerChannel, {
+                                    where: {
+                                        viewerId: foundViewer.id,
+                                        channelId: foundChannel.id
+                                    }
+                                }).then((done) => {
+                                    if (done[0] === 1) {
+                                        say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 3} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
+                                    }
+                                });
+                            } else {
+                                foundViewerChannel.currentPoints -= ammountToGamble;
+                                Channel.update(foundViewerChannel, {
+                                    where: {
+                                        viewerId: foundViewer.id,
+                                        channelId: foundChannel.id
+                                    }
+                                }).then((done) => {
+                                    if (done[0] === 1) {
+                                        say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and loss ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
+                                    }
+                                });
+                            }
+                            alreadyGambled.push(user.username);
+                            setTimeout(() => {
+                                alreadyGambled.splice(0);
+                            }, 60000 * 5);
+                        } else if (ammountToGamble > totalPoints) {
+                            say(`@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
+                        } else if (!canGamble) {
+                            say(`@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
                         }
                     });
-                    if (ammountToGamble <= totalPoints && canGamble) {
-                        let rolledNumber = a ? Math.floor(Math.random() * (54 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
-                        if (rolledNumber >= 55 && rolledNumber < 99) {
-                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
-                            fd.points += ammountToGamble;
-                            jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
-                        } else if (rolledNumber >= 99) {
-                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
-                            fd.points += (ammountToGamble * 2);
-                            jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
-                        } else {
-                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and lost ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
-                            fd.points -= ammountToGamble;
-                            jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
-                        }
-                        alreadyGambled.push(user.username);
-                        setTimeout(() => {
-                            alreadyGambled.splice(0);
-                        }, 60000 * 5);
-                    } else if (ammountToGamble > totalPoints) {
-                        say(`@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
-                    } else if (!canGamble) {
-                        say(`@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
-                    }
-                }
+                });
             });
+
         }
     }
-    if (message.slice(0, 7) === "!ticket") {
+    if (message.split(" ")[0] === "!ticket") {
         if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) > -1) {
             let numberOfTickets = parseInt(message.split(" ")[1], 10),
                 totalCost = 5 * numberOfTickets;
-            jsonfile.readFile(`viewers/${user.username}`, (err, fd) => {
-                if (err) {
-                    say(`${user.username} you don't have enough Trend Tokens!`);
-                } else {
-                    // user exist
-                    if (fd.points < totalCost) {
-                        say(`${user.username} you only have ${fd.points} Trend Tokens!`);
-                    } else {
-                        fd.points -= totalCost;
-                        jsonfile.writeFile(`viewers/${user.username}`, fd, (err) => {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                jsonfile.readFile(`lottery.json`, (err, fd) => {
-                                    let hasTickets = _.some(fd.users, (currentUser) => {
-                                            return currentUser.username === user.username;
-                                        }),
-                                        ticketNumbers;
-                                    if (hasTickets) {
-                                        _.each(fd.users, (currentUser, j) => {
-                                            if (currentUser.username === user.username) {
-                                                for (var i = numberOfTickets; i > 0; i--) {
-                                                    fd.users[j].tickets.push(getTicketNumber());
-                                                }
-                                                ticketNumbers = currentUser.tickets;
-                                            }
-                                        });
-                                        lottery.newPot += parseInt(totalCost * 0.5, 10);
-                                        jsonfile.writeFile(`lottery.json`, fd, (err) => {
-                                            if (err) {
-                                                console.log(err);
-                                            }
-                                        });
-                                        if (ticketNumbers.length < 50) {
-                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
-                                        } else {
-                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Some of your numbers are ${ticketNumbers.slice(0, 50).toString()}...`);
-                                        }
-                                    } else {
-                                        let newUser = {};
-                                        newUser.username = user.username;
-                                        newUser.tickets = [];
-                                        lottery.newPot += parseInt(totalCost * 0.5, 10);
-                                        for (var i = numberOfTickets; i > 0; i--) {
-                                            newUser.tickets.push(getTicketNumber());
-                                        }
-
-                                        fd.users.push(newUser);
-                                        jsonfile.writeFile(`lottery.json`, fd, (err) => {
-                                            if (err) {
-                                                console.log(err);
-                                            }
-                                        });
-                                        if (newUser.tickets.length === 1) {
-                                            say(`${user.username} now has ${newUser.tickets.length} lottery ticket! Your number is ${newUser.tickets.toString()}`);
-                                        } else if (newUser.tickets.length < 50) {
-                                            say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Your numbers are ${newUser.tickets.toString()}`);
-                                        } else {
-                                            say(`${user.username} now has ${newUser.tickets.length} lottery tickets! Some of your numbers are ${newUser.tickets.slice(0, 50).toString()}...`);
-                                        }
-                                    }
-                                });
-
-
-                            }
-                        });
-                    }
+            Viewer.findOne({
+                where: {
+                    username: user.username
                 }
+            }).then((foundViewer) => {
+                foundViewer = foundViewer.dataValues;
+                Viewer.findOne({
+                    where: {
+                        username: channel.substring(1).toLowerCase()
+                    }
+                }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                        where: {
+                            viewerId: foundViewer.id,
+                            channelId: foundChannel.id
+                        }
+                    }).then((foundViewerChannel) => {
+                        foundViewerChannel = foundViewerChannel.dataValues;
+                        if (foundViewerChannel.currentPoints < totalCost) {
+                            say(`${user.username} you only have ${foundViewerChannel.currentPoints} Trend Tokens!`);
+                        } else {
+                            foundViewerChannel.currentPoints -= totalCost;
+                            let ticketNumbers;
+                            if (foundViewerChannel.tickets.length) {
+                                let tickets = foundViewerChannel.tickets.split(" ");
+                                for (var i = numberOfTickets; i > 0; i--) {
+                                    tickets.push(getTicketNumber().toString());
+                                }
+                                Viewer.findOne({
+                                    where: {
+                                        username: channel.substring(1).toLowerCase()
+                                    }
+                                }).then((currentChannel) => {
+                                    currentChannel = currentChannel.dataValues;
+                                    Channel.findOne({
+                                        where: {
+                                            viewerId: currentChannel.id,
+                                            channelId: currentChannel.id
+                                        }
+                                    }).then((foundStream) => {
+                                        foundStream.lottery += parseInt(totalCost * 0.5, 10);
+                                        Channel.update(foundStream, {
+                                            where: {
+                                                viewerId: currentChannel.id,
+                                                channelId: currentChannel.id
+                                            }
+                                        });
+                                    }).then((updatedStream) => {
+                                        foundViewerChannel.tickets = tickets.toString();
+                                        Channel.update(foundViewerChannel, {
+                                            where: {
+                                                viewerId: foundViewerChannel.id,
+                                                channelId: currentChannel.id
+                                            }
+                                        });
+                                    });
+                                });
+                                if (tickets.length < 50) {
+                                    say(`${user.username} now has ${tickets.length} lottery tickets! Your numbers are ${tickets.toString()}`);
+                                } else {
+                                    say(`${user.username} now has ${tickets.length} lottery tickets! Some of your numbers are ${tickets.slice(0, 50).toString()}...`);
+                                }
+                            } else {
+                                let tickets = [];
+                                for (var k = numberOfTickets; k > 0; k--) {
+                                    tickets.push(getTicketNumber().toString());
+                                }
+                                Viewer.findOne({
+                                    where: {
+                                        username: channel.substring(1).toLowerCase()
+                                    }
+                                }).then((currentChannel) => {
+                                    currentChannel = currentChannel.dataValues;
+                                    Channel.findOne({
+                                        where: {
+                                            viewerId: currentChannel.id,
+                                            channelId: currentChannel.id
+                                        }
+                                    }).then((foundStream) => {
+                                        foundStream.lottery += parseInt(totalCost * 0.5, 10);
+                                        Channel.update(foundStream, {
+                                            where: {
+                                                viewerId: currentChannel.id,
+                                                channelId: currentChannel.id
+                                            }
+                                        });
+                                    }).then((updatedStream) => {
+                                        foundViewerChannel.tickets = tickets.toString();
+                                        Channel.update(foundViewerChannel, {
+                                            where: {
+                                                viewerId: foundViewerChannel.id,
+                                                channelId: currentChannel.id
+                                            }
+                                        });
+                                    });
+                                });
+                                if (tickets.length < 50) {
+                                    say(`${user.username} now has ${tickets.length} lottery tickets! Your numbers are ${tickets.toString()}`);
+                                } else {
+                                    say(`${user.username} now has ${tickets.length} lottery tickets! Some of your numbers are ${tickets.slice(0, 50).toString()}...`);
+                                }
+                            }
+                        }
+                    });
+                });
             });
+        } else {
+          Viewer.findOne({
+              where: {
+                  username: user.username
+              }
+          }).then((foundViewer) => {
+              foundViewer = foundViewer.dataValues;
+              Viewer.findOne({
+                  where: {
+                      username: channel.substring(1).toLowerCase()
+                  }
+              }).then((foundChannel) => {
+                  foundChannel = foundChannel.dataValues;
+                  Channel.findOne({
+                      where: {
+                          viewerId: foundViewer.id,
+                          channelId: foundChannel.id
+                      }
+                  }).then((foundViewerChannel) => {
+                      foundViewerChannel = foundViewerChannel.dataValues;
+                      if (foundViewerChannel.tickets.split(" ").length < 50) {
+                          say(`${user.username} now has ${foundViewerChannel.tickets.split(" ").length} lottery tickets! Your numbers are ${foundViewerChannel.tickets}`);
+                      } else {
+                          say(`${user.username} now has ${foundViewerChannel.tickets.split(" ").length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.split(" ").slice(0, 50).toString()}...`);
+                      }
+                  });
+              });
+          });
         }
     }
 
@@ -459,7 +624,7 @@ client.on('chat', (channel, user, message, self) => {
             }
         });
     }
-    if (user.username === "settingtrends" && message.slice(0, 10) === "!dolottery") {
+    if (user.username === "hazey7893" && message.slice(0, 10) === "!dolottery") {
         doLotteryNow();
     }
 });
@@ -479,7 +644,7 @@ function doLotteryNow() {
             if (winners.length === 1) {
                 jsonfile.readFile(`./lottery.json`, (err, fd) => {
                     if (err) {
-                        cosole.log(err);
+                        console.log(err);
                     } else {
                         let winningPot = fd.pot;
                         fd.pot = 5000 + parseInt(lottery.newPot, 10);
@@ -571,6 +736,42 @@ function doLottery() {
     }, 60000 * 15);
 }
 
+function givePoints(viewerUsername, channel, ammount, message) {
+    Viewer.findOne({
+        where: {
+            username: viewerUsername
+        }
+    }).then((foundViewer) => {
+        foundViewer = foundViewer.dataValues;
+        Viewer.findOne({
+            where: {
+                username: channel.substring(1).toLowerCase()
+            }
+        }).then((foundChannel) => {
+            foundChannel = foundChannel.dataValues;
+            Channel.findOne({
+                where: {
+                    viewerId: foundViewer.id,
+                    channelId: foundChannel.id
+                }
+            }).then((foundViewerChannel) => {
+                foundViewerChannel = foundViewerChannel.dataValues;
+                foundViewerChannel.currentPoints += ammount;
+                Channel.update(foundViewerChannel, {
+                    where: {
+                        viewerId: foundViewer.id,
+                        channelId: foundChannel.id
+                    }
+                }).then((done) => {
+                    if (done[0] === 1) {
+                        say(message);
+                    }
+                });
+            });
+        });
+    });
+}
+
 function getTopUsers() {
     fs.readdir("viewers", (err, files) => {
         topUsers = [];
@@ -616,7 +817,7 @@ function resetLotteryPot() {
 }
 
 function getUsers() {
-    callback = function(response) {
+    let callback = function(response) {
         var str = '';
 
         //another chunk of data has been recieved, so append it to `str`
@@ -668,7 +869,7 @@ function getUsers() {
 }
 
 function checkOnline() {
-    callback = function(response) {
+    let callback = function(response) {
         var str = '';
 
         //another chunk of data has been recieved, so append it to `str`

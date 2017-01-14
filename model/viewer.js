@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     email: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     username: {
       type: DataTypes.TEXT,
@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     display: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
       unique: false
     }
   }, {

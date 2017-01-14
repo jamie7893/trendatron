@@ -23,16 +23,6 @@ const express = require('express'),
 
 let FileStore = sessionFileStore(session);
 
-passport.use(new TwitchTokenStrategy({
-    clientID: config.TWITCHTV_CLIENT_ID,
-    clientSecret: config.TWITCHTV_CLIENT_SECRET,
-    passReqToCallback: true
-}, function(req, accessToken, refreshToken, profile, next) {
-    // User.findOrCreate({'twitch.id': profile.id}, function(error, user) {
-    // return next(null, profile);
-    // });
-    console.log(req, accessToken, refreshToken, profile, next);
-}));
 // Cookies
 app.set('trust proxy', 1); // trust first proxy
 var sess = {
@@ -87,61 +77,18 @@ let Viewer = sequelize.import ('./model/viewer.js'),
 //
 // });
 
+const userService = require("./service/user.js")(sequelize);
+
 sequelize.sync().then(function(res) {
     Viewer.sync();
     Channel.sync();
     // passport.authenticate('twitch-token')
-   app.get('/viewer', (req, res) => {
-     res.send(req.session.viewer);
-   });
-    app.get('/auth/twitch', function(req, res) {
-      let code = req.query.code;
-  axios.post('https://api.twitch.tv/kraken/oauth2/token', {
-    client_id: config.TWITCHTV_CLIENT_ID,
-    client_secret: config.TWITCHTV_CLIENT_SECRET,
-    grant_type: "authorization_code",
-    redirect_uri: "http://localhost:1738/auth/twitch",
-    code: code
-  }).then((response) => {
-    let token = response.data.access_token;
-    axios.get('https://api.twitch.tv/kraken/user', {
-        "headers": {
-            "Accept": "application/vnd.twitchtv.v5+json",
-            "Client-ID": "xbp0my875pnzs1mb2hgre3ohmjlqnx",
-            "Authorization": `OAuth ${token}`
-        }
-    }).then(function(response) {
-        let viewer = response.data;
-        Viewer.findOne({
-            where: {
-                email: viewer.email
-            }
-          }).then((foundViewer) => {
-            if (foundViewer) {
-              req.session.viewer = foundViewer.dataValues;
-              res.redirect('/#/profile');
-            } else {
-              let newViewer = {
-                email: viewer.email,
-                display: viewer.display_name,
-                username: viewer.name
-              };
-              Viewer.create(newViewer).then((viewer) => {
-                req.session.viewer = viewer.dataValues;
-                res.redirect('/#/profile');
-              });
-            }
-          });
-    }).catch(function(error) {
-        console.log(error);
+    app.get('/viewer', (req, res) => {
+        res.send(req.session.viewer);
     });
 
-  }).catch((error) => {
-    console.log(error);
-  });
-
-
-    });
+    app.route('/viewer').get(userService.getUser);
+    app.route('/auth/twitch').get(userService.login);
 
     server = http.listen(process.env.PORT || 1738, process.env.IP || "0.0.0.0", function() {
         let addr = server.address();
