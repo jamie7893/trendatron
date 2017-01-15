@@ -149,7 +149,7 @@ client.on('chat', (channel, user, message, self) => {
     }
     let a = (user.username.toLowerCase() === "settingtrends");
 
-    if (message.slice(0, 13) === "!trendsetters") {
+    if (message.split(" ")[0] === "!trendsetters") {
         say(`https://clips.twitch.tv/settingtrends/ElatedFinchDuDudu`);
     }
 
@@ -175,7 +175,7 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
 
-    if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
+    if (message.split(" ")[0] === "!toptrenders" || message.split(" ")[0] === "!leaderboard" || message.split(" ")[0] === "!leaderboards") {
         topUsers = _.filter(topUsers, (topUser) => {
             return topUser.user !== "revlobot" && topUser.user !== "trendatron" && topUser.user !== "nightbot" && topUser.user !== "hazey7893";
         });
@@ -518,6 +518,7 @@ client.on('chat', (channel, user, message, self) => {
                                             channelId: currentChannel.id
                                         }
                                     }).then((foundStream) => {
+                                        foundStream = foundStream.dataValues;
                                         foundStream.lottery += parseInt(totalCost * 0.5, 10);
                                         Channel.update(foundStream, {
                                             where: {
@@ -527,6 +528,9 @@ client.on('chat', (channel, user, message, self) => {
                                         });
                                     }).then((updatedStream) => {
                                         foundViewerChannel.tickets = tickets.toString();
+                                        if (foundViewerChannel.id === currentChannel.id) {
+                                            foundViewerChannel.lottery += parseInt(totalCost * 0.5, 10);
+                                        }
                                         Channel.update(foundViewerChannel, {
                                             where: {
                                                 viewerId: foundViewerChannel.id,
@@ -559,6 +563,7 @@ client.on('chat', (channel, user, message, self) => {
                                             channelId: currentChannel.id
                                         }
                                     }).then((foundStream) => {
+                                      foundStream = foundStream.dataValues;
                                         foundStream.lottery += parseInt(totalCost * 0.5, 10);
                                         Channel.update(foundStream, {
                                             where: {
@@ -568,6 +573,9 @@ client.on('chat', (channel, user, message, self) => {
                                         });
                                     }).then((updatedStream) => {
                                         foundViewerChannel.tickets = tickets.toString();
+                                        if (foundViewerChannel.id === currentChannel.id) {
+                                            foundViewerChannel.lottery += parseInt(totalCost * 0.5, 10);
+                                        }
                                         Channel.update(foundViewerChannel, {
                                             where: {
                                                 viewerId: foundViewerChannel.id,
@@ -619,16 +627,25 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
 
-    if (message.slice(0, 8) === "!lottery") {
-        jsonfile.readFile(`./lottery.json`, (err, fd) => {
-            if (err) {
-                console.log(err);
-            } else {
-                say(`The current lottery pot is ${fd.pot} Trend Tokens!`);
+    if (message.split(" ")[0] === "!lottery") {
+        Viewer.findOne({
+            where: {
+                username: channel.substring(1).toLowerCase()
             }
+        }).then((foundStreamer) => {
+            foundStreamer = foundStreamer.dataValues;
+            Channel.findOne({
+                where: {
+                    viewerId: foundStreamer.id,
+                    channelId: foundStreamer.id
+                }
+            }).then((foundChannel) => {
+                foundChannel = foundChannel.dataValues;
+                say(`The current lottery is at ${foundChannel.lottery} Trend Tokens!`);
+            });
         });
     }
-    if (user.username === "hazey7893" && message.slice(0, 10) === "!dolottery") {
+    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ") === "!dolottery") {
         doLotteryNow();
     }
 });
