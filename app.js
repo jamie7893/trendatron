@@ -110,32 +110,32 @@ client.on('chat', (channel, user, message, self) => {
                         });
                     });
                 } else {
-                  Viewer.findOne({
-                    where: {
-                      username: channel.substring(1).toLowerCase()
-                    }
-                  }).then((foundChannel) => {
-                    foundChannel = foundChannel.dataValues;
-                    Channel.findOne({
-                      where: {
-                        channelId: foundChannel.id,
-                        viewerId: found.id
-                    }
-                  }).then((foundCurrent) => {
-                    if (!foundCurrent) {
-                      let joinChannel = {
-                          channelId: foundChannel.id,
-                          viewerId: found.id,
-                          role: 0,
-                          totalPoints: 1,
-                          currentPoints: 1,
-                          lottery: 15000,
-                          tickets: ""
-                      };
-                      Channel.create(joinChannel);
-                    }
-                  });
-                });
+                    Viewer.findOne({
+                        where: {
+                            username: channel.substring(1).toLowerCase()
+                        }
+                    }).then((foundChannel) => {
+                        foundChannel = foundChannel.dataValues;
+                        Channel.findOne({
+                            where: {
+                                channelId: foundChannel.id,
+                                viewerId: found.id
+                            }
+                        }).then((foundCurrent) => {
+                            if (!foundCurrent) {
+                                let joinChannel = {
+                                    channelId: foundChannel.id,
+                                    viewerId: found.id,
+                                    role: 0,
+                                    totalPoints: 1,
+                                    currentPoints: 1,
+                                    lottery: 15000,
+                                    tickets: ""
+                                };
+                                Channel.create(joinChannel);
+                            }
+                        });
+                    });
                 }
             });
             checkedUsers.push(user.username);
@@ -474,7 +474,7 @@ client.on('chat', (channel, user, message, self) => {
         }
     }
     if (message.split(" ")[0] === "!ticket") {
-        if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) > -1) {
+        if (parseInt(message.split(" ")[1], 10) && parseInt(message.split(" ")[1], 10) >= 0) {
             let numberOfTickets = parseInt(message.split(" ")[1], 10),
                 totalCost = 5 * numberOfTickets;
             Viewer.findOne({
@@ -533,13 +533,15 @@ client.on('chat', (channel, user, message, self) => {
                                                 channelId: currentChannel.id
                                             }
                                         });
+                                    }).then((done) => {
+                                        if (foundViewerChannel.tickets.split(",").length < 50) {
+                                            say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Your numbers are ${foundViewerChannel.tickets}`);
+                                        } else {
+                                            say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.split(",").slice(0, 50).toString()}...`);
+                                        }
                                     });
                                 });
-                                if (tickets.length < 50) {
-                                    say(`${user.username} now has ${tickets.length} lottery tickets! Your numbers are ${tickets.toString()}`);
-                                } else {
-                                    say(`${user.username} now has ${tickets.length} lottery tickets! Some of your numbers are ${tickets.slice(0, 50).toString()}...`);
-                                }
+
                             } else {
                                 let tickets = [];
                                 for (var k = numberOfTickets; k > 0; k--) {
@@ -571,47 +573,49 @@ client.on('chat', (channel, user, message, self) => {
                                                 viewerId: foundViewerChannel.id,
                                                 channelId: currentChannel.id
                                             }
+                                        }).then((done) => {
+                                            if (foundViewerChannel.tickets.split(",").length < 50) {
+                                                say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
+                                            } else {
+                                                say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.split(",").slice(0, 50).toString()}...`);
+                                            }
                                         });
                                     });
                                 });
-                                if (tickets.length < 50) {
-                                    say(`${user.username} now has ${tickets.length} lottery tickets! Your numbers are ${tickets.toString()}`);
-                                } else {
-                                    say(`${user.username} now has ${tickets.length} lottery tickets! Some of your numbers are ${tickets.slice(0, 50).toString()}...`);
-                                }
                             }
                         }
                     });
                 });
             });
         } else {
-          Viewer.findOne({
-              where: {
-                  username: user.username
-              }
-          }).then((foundViewer) => {
-              foundViewer = foundViewer.dataValues;
-              Viewer.findOne({
-                  where: {
-                      username: channel.substring(1).toLowerCase()
-                  }
-              }).then((foundChannel) => {
-                  foundChannel = foundChannel.dataValues;
-                  Channel.findOne({
-                      where: {
-                          viewerId: foundViewer.id,
-                          channelId: foundChannel.id
-                      }
-                  }).then((foundViewerChannel) => {
-                      foundViewerChannel = foundViewerChannel.dataValues;
-                      if (foundViewerChannel.tickets.split(" ").length < 50) {
-                          say(`${user.username} now has ${foundViewerChannel.tickets.split(" ").length} lottery tickets! Your numbers are ${foundViewerChannel.tickets}`);
-                      } else {
-                          say(`${user.username} now has ${foundViewerChannel.tickets.split(" ").length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.split(" ").slice(0, 50).toString()}...`);
-                      }
-                  });
-              });
-          });
+            Viewer.findOne({
+                where: {
+                    username: user.username
+                }
+            }).then((foundViewer) => {
+                foundViewer = foundViewer.dataValues;
+                Viewer.findOne({
+                    where: {
+                        username: channel.substring(1).toLowerCase()
+                    }
+                }).then((foundChannel) => {
+                    foundChannel = foundChannel.dataValues;
+                    Channel.findOne({
+                        where: {
+                            viewerId: foundViewer.id,
+                            channelId: foundChannel.id
+                        }
+                    }).then((foundViewerChannel) => {
+                        foundViewerChannel = foundViewerChannel.dataValues;
+
+                        if (foundViewerChannel.tickets.split(",").length < 50) {
+                            say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Your numbers are ${foundViewerChannel.tickets}`);
+                        } else {
+                            say(`${user.username} now has ${foundViewerChannel.tickets.split(",").length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.split(",").slice(0, 50).toString()}...`);
+                        }
+                    });
+                });
+            });
         }
     }
 
