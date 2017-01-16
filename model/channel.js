@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
       unique: false
     },
     tickets: {
-      type: DataTypes.TEXT,
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
       allowNull: true,
       unique: false
     }

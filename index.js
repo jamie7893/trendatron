@@ -61,9 +61,6 @@ const sequelize = new Sequelize('postgres://postgres:admin@localhost:3000/postgr
 let Viewer = sequelize.import ('./model/viewer.js'),
     Channel = sequelize.import ('./model/channel.js');
 
-// const colorsService = require("./service/colors")(sequelize);
-// const userService = require("./service/user.js")(sequelize);
-
 // io.on('connection', function(socket) {
 //     console.log('a user connected');
 //     socket.on('disconnect', function() {
