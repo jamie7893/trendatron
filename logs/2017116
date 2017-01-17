@@ -91,3 +91,80 @@ hazey7893:!trendtokens
 hazey7893:!gamble 5000
 hazey7893:!ticket 5000
 Caught exception: TypeError: Cannot read property 'substring' of undefined
+hazey7893:!ticket 5
+Caught exception: ReferenceError: adress is not defined
+Caught exception: TypeError: Cannot set property 'hazey7893' of undefined
+Caught exception: TypeError: Cannot read property 'hazey7893' of undefined
+Caught exception: TypeError: Cannot read property 'messageDelay' of undefined
+Caught exception: TypeError: Cannot read property 'messageDelay' of undefined
+Caught exception: TypeError: Cannot create property 'messageDelay' on boolean 'true'
+hazey7893:!ticket 12
+Caught exception: TypeError: Cannot create property 'messageDelay' on boolean 'true'
+hazey7893:!dolottery
+Caught exception: TypeError: Cannot create property 'messageDelay' on boolean 'true'
+Caught exception: TypeError: Cannot create property 'messageDelay' on boolean 'true'
+hazey7893:!ticket 5
+Caught exception: TypeError: Cannot create property 'messageDelay' on boolean 'true'
+hazey7893:!dolottery
+hazey7893:!ticket 50
+hazey7893:!dolottery
+hazey7893:!ticket 50
+hazey7893:!dolottery
+hazey7893:!ticket 5
+hazey7893:!dolottery
+hazey7893:!ticket 5
+hazey7893:!dolottery
+hazey7893:!trendtokens
+hazey7893:!gamble 5000
+hazey7893:!leaderboard
+hazey7893:!trendtokens
+hazey7893:!gamble 2000
+hazey7893:!ticket 50
+hazey7893:!trendtokens
+hazey7893:!ticket
+hazey7893:!trendtokens
+hazey7893:!ticket
+hazey7893:!trendtokens
+hazey7893:!ticket
+hazey7893:!trendtokens
+hazey7893:!ticket
+hazey7893:!trendtokens
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+trendatron:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!leaderboard
+hazey7893:!trendtokens
+hazey7893:!ticket 50
+hazey7893:!gamble 5000
+hazey7893:!toptrenders
+hazey7893:!lottery
+hazey7893:!ticket 100
+hazey7893:!rendtokens
+hazey7893:!trendtokens
+hazey7893:!bonusall 100
+hazey7893:!trendtokens
+hazey7893:!bonus hazey7893 -1000
+hazey7893:!trendtokens
+hazey7893:!bonus hazey7893 1000
+hazey7893:!trendtokens
+hazey7893:!lottery
+hazey7893:!givesupermod trendatron
+hazey7893:!removesupermod trendatron
+hazey7893:!givesupermod trendatron
+hazey7893:!dolottery
+hazey7893:!ticket 50
+hazey7893:!lottery
