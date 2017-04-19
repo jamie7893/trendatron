@@ -20,7 +20,7 @@ let tmi = require('tmi.js'),
             username: "trendatron",
             password: config.pass
         },
-        channels: ["hazey7893"]
+        channels: ["hazey7893", "trendatron"]
     },
 
     client = new tmi.client(options);
@@ -68,26 +68,39 @@ let checkTrendTokens = [],
     messageDelay = 0,
     stream,
     lastMsg,
-    checkedUsers = [],
     thisStream = {},
     lottery = {};
 lottery.newPot = 0;
 
-Viewer.hasMany(Channel, {foreignKey: 'id'});
-Channel.belongsTo(Viewer, {foreignKey: 'viewerId'});
+  Viewer.hasMany(Channel, {foreignKey: 'id'});
+  Channel.belongsTo(Viewer, {foreignKey: 'viewerId'});
 
 client.on('roomstate', (channel, state) => {
-    say(channel.substring(1).toLowerCase(), `The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+   channel = channel.substring(1).toLowerCase();
+  if (!thisStream[channel]) {
+      thisStream[channel] = {};
+      thisStream[channel].messageDelay += 800;
+      thisStream[channel].lastMsg = "";
+      thisStream[channel].checkedUsers = [];
+      thisStream[channel].alreadyGambled = [];
+      doLottery(channel);
+      getUsers(channel);
+  }
+    say(channel, `The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
 client.on('chat', (channel, user, message, self) => {
-    if (!thisStream[channel]) {
-        thisStream[channel] = {};
-        doLottery(channel.substring(1).toLowerCase());
-        getUsers(channel.substring(1).toLowerCase());
-    }
+  channel = channel.substring(1).toLowerCase();
+ if (!thisStream[channel]) {
+     thisStream[channel] = {};
+     thisStream[channel].messageDelay += 800;
+     thisStream[channel].lastMsg = "";
+     thisStream[channel].checkedUsers = [];
+     thisStream[channel].alreadyGambled = [];
+     getUsers(channel);
+ }
     function checkAndCreateUser(user, channel) {
-        if (!checkedUsers.includes(user.username)) {
+        if (!thisStream[channel].checkedUsers.includes(user.username)) {
             Viewer.findOne({
                 where: {
                     username: user.username.toLowerCase()
@@ -147,11 +160,11 @@ client.on('chat', (channel, user, message, self) => {
                     });
                 }
             });
-            checkedUsers.push(user.username);
+            thisStream[channel].checkedUsers.push(user.username);
         }
     }
 
-    checkAndCreateUser(user, channel.substring(1).toLowerCase());
+    checkAndCreateUser(user, channel);
 
     if (message.slice(0, 1) === "!") {
         log_file_err.write(util.format(`${user.username}:${message}`) + '\n');
@@ -159,35 +172,35 @@ client.on('chat', (channel, user, message, self) => {
     let a = (user.username.toLowerCase() === "settingtrends");
 
     if (message.split(" ")[0] === "!trendsetters") {
-        say(channel.substring(1).toLowerCase(), `https://clips.twitch.tv/settingtrends/ElatedFinchDuDudu`);
+        say(channel, `https://clips.twitch.tv/settingtrends/ElatedFinchDuDudu`);
     }
 
     if (message.toLowerCase().search("eric") !== -1) {
         if (user.username.toLowerCase() === "quakerrs") {
-            say(channel.substring(1).toLowerCase(), `CHRIS`);
+            say(channel, `CHRIS`);
         } else if (user.username.toLowerCase() === "false_hopes") {
-            say(channel.substring(1).toLowerCase(), `JERRI`);
+            say(channel, `JERRI`);
         } else if (user.username.toLowerCase() === "alfierules") {
-            say(channel.substring(1).toLowerCase(), `ALFRED THE THIRD`);
+            say(channel, `ALFRED THE THIRD`);
         } else if (user.username.toLowerCase() === "jessicaonrs") {
-            say(channel.substring(1).toLowerCase(), `JESSICA`);
+            say(channel, `JESSICA`);
         } else if (user.username.toLowerCase() === "hazey7893") {
-            say(channel.substring(1).toLowerCase(), `JAMIE`);
+            say(channel, `JAMIE`);
         } else if (user.username.toLowerCase() === "itsounds" || user.username.toLowerCase() === "ltsounds") {
-            say(channel.substring(1).toLowerCase(), `JOSH`);
+            say(channel, `JOSH`);
         } else if (user.username.toLowerCase() === "settingtrends") {
-            say(channel.substring(1).toLowerCase(), `ERIC haHAA`);
+            say(channel, `ERIC haHAA`);
         } else if (user.username.toLowerCase() === "itsmalia") {
-            say(channel.substring(1).toLowerCase(), `AMANDA`);
+            say(channel, `AMANDA`);
         } else {
-            say(channel.substring(1).toLowerCase(), `${user.username.toUpperCase()}`);
+            say(channel, `${user.username.toUpperCase()}`);
         }
     }
 
     if (message.split(" ")[0] === "!toptrenders" || message.split(" ")[0] === "!leaderboard" || message.split(" ")[0] === "!leaderboards") {
         Viewer.findOne({
             where: {
-                username: channel.substring(1).toLowerCase()
+                username: channel
             }
         }).then((streamer) => {
             streamer = streamer.dataValues;
@@ -207,7 +220,7 @@ client.on('chat', (channel, user, message, self) => {
                 _.each(top10, (one, i) => {
                     topMessage += ` #${i + 1} ${top10[i].viewer.dataValues.username} score: ${top10[i].totalPoints} |`;
                 });
-                say(channel.substring(1).toLowerCase(), topMessage);
+                say(channel, topMessage);
 
             });
         });
@@ -228,7 +241,7 @@ client.on('chat', (channel, user, message, self) => {
             currentViewer = currentViewer.dataValues;
             Viewer.findOne({
                 where: {
-                    username: channel.substring(1).toLowerCase()
+                    username: channel
                 }
             }).then((streamer) => {
                 streamer = streamer.dataValues;
@@ -252,9 +265,9 @@ client.on('chat', (channel, user, message, self) => {
                         }).then((updated) => {
                             if (currentViewer) {
                                 if (parseInt(message.split(" ")[2], 10) >= 0) {
-                                    say(channel.substring(1).toLowerCase(), `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
+                                    say(channel, `@${message.split(" ")[1].toLowerCase()} was given ${message.split(" ")[2]} Trend Tokens by ${user.username}!`);
                                 } else {
-                                    say(channel.substring(1).toLowerCase(), `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
+                                    say(channel, `@${message.split(" ")[1].toLowerCase()} has had ${message.split(" ")[2]} Trend Tokens taken away by ${user.username}!`);
                                 }
                             }
                         });
@@ -265,7 +278,7 @@ client.on('chat', (channel, user, message, self) => {
         });
 
     }
-    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!givesupermod") {
+    if (user.username.toLowerCase() === channel && message.split(" ")[0] === "!givesupermod") {
         if (message.split(" ")[1]) {
             checkAndCreateUser({
                 username: message.split(" ")[1],
@@ -279,7 +292,7 @@ client.on('chat', (channel, user, message, self) => {
                 foundViewer = foundViewer.dataValues;
                 Viewer.findOne({
                     where: {
-                        username: channel.substring(1).toLowerCase()
+                        username: channel
                     }
                 }).then((foundChannel) => {
                     foundChannel = foundChannel.dataValues;
@@ -298,7 +311,7 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         }).then((done) => {
                             if (done[0] === 1) {
-                                say(channel.substring(1).toLowerCase(), `@${message.split(" ")[1].toLowerCase()} is now a supermod!`);
+                                say(channel, `@${message.split(" ")[1].toLowerCase()} is now a supermod!`);
                             }
                         });
                     });
@@ -306,7 +319,7 @@ client.on('chat', (channel, user, message, self) => {
             });
         }
     }
-    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!removesupermod") {
+    if (user.username.toLowerCase() === channel && message.split(" ")[0] === "!removesupermod") {
         if (message.split(" ")[1]) {
             checkAndCreateUser({
                 username: message.split(" ")[1],
@@ -320,7 +333,7 @@ client.on('chat', (channel, user, message, self) => {
                 foundViewer = foundViewer.dataValues;
                 Viewer.findOne({
                     where: {
-                        username: channel.substring(1).toLowerCase()
+                        username: channel
                     }
                 }).then((foundChannel) => {
                     foundChannel = foundChannel.dataValues;
@@ -339,7 +352,7 @@ client.on('chat', (channel, user, message, self) => {
                             }
                         }).then((done) => {
                             if (done[0] === 1) {
-                                say(channel.substring(1).toLowerCase(), `@${message.split(" ")[1].toLowerCase()} is not a supermod anymore!`);
+                                say(channel, `@${message.split(" ")[1].toLowerCase()} is not a supermod anymore!`);
                             }
                         });
                     });
@@ -347,7 +360,7 @@ client.on('chat', (channel, user, message, self) => {
             });
         }
     }
-    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!bonusall") {
+    if (user.username.toLowerCase() === channel && message.split(" ")[0] === "!bonusall") {
         if (parseInt(message.split(" ")[1], 10)) {
             let callbackBonus = function(response) {
                 var str = '';
@@ -368,7 +381,7 @@ client.on('chat', (channel, user, message, self) => {
 
             http.request({
                 host: "tmi.twitch.tv",
-                path: `/group/user/${channel.substring(1).toLowerCase()}/chatters`
+                path: `/group/user/${channel}/chatters`
             }, callbackBonus).end();
         }
     }
@@ -382,7 +395,7 @@ client.on('chat', (channel, user, message, self) => {
             foundViewer = foundViewer.dataValues;
             Viewer.findOne({
                 where: {
-                    username: channel.substring(1).toLowerCase()
+                    username: channel
                 }
             }).then((foundChannel) => {
                 foundChannel = foundChannel.dataValues;
@@ -393,7 +406,7 @@ client.on('chat', (channel, user, message, self) => {
                     }
                 }).then((foundViewerChannel) => {
                     foundViewerChannel = foundViewerChannel.dataValues;
-                    say(channel.substring(1).toLowerCase(), `@${user.username} has ${foundViewerChannel.currentPoints} Trend Tokens`);
+                    say(channel, `@${user.username} has ${foundViewerChannel.currentPoints} Trend Tokens`);
                 });
             });
         });
@@ -402,7 +415,7 @@ client.on('chat', (channel, user, message, self) => {
         if (parseInt(message.split(" ")[1], 10)) {
             let ammountToGamble = parseInt(message.split(" ")[1], 10),
                 canGamble = true;
-            alreadyGambled.forEach((didGamble) => {
+            thisStream[channel].alreadyGambled.forEach((didGamble) => {
                 if (didGamble === user.username) {
                     canGamble = false;
                 }
@@ -415,7 +428,7 @@ client.on('chat', (channel, user, message, self) => {
                 foundViewer = foundViewer.dataValues;
                 Viewer.findOne({
                     where: {
-                        username: channel.substring(1).toLowerCase()
+                        username: channel
                     }
                 }).then((foundChannel) => {
                     foundChannel = foundChannel.dataValues;
@@ -428,7 +441,7 @@ client.on('chat', (channel, user, message, self) => {
                         foundViewerChannel = foundViewerChannel.dataValues;
                         let totalPoints = foundViewerChannel.currentPoints;
                         canGamble = true;
-                        alreadyGambled.forEach((didGamble) => {
+                        thisStream[channel].alreadyGambled.forEach((didGamble) => {
                             if (didGamble === user.username) {
                                 canGamble = false;
                             }
@@ -446,7 +459,7 @@ client.on('chat', (channel, user, message, self) => {
                                     }
                                 }).then((done) => {
                                     if (done[0] === 1) {
-                                        say(channel.substring(1).toLowerCase(), `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
+                                        say(channel, `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
                                     }
                                 });
                             } else if (rolledNumber >= 99) {
@@ -458,7 +471,7 @@ client.on('chat', (channel, user, message, self) => {
                                     }
                                 }).then((done) => {
                                     if (done[0] === 1) {
-                                        say(channel.substring(1).toLowerCase(), `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 3} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
+                                        say(channel, `@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 3} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
                                     }
                                 });
                             } else {
@@ -470,18 +483,18 @@ client.on('chat', (channel, user, message, self) => {
                                     }
                                 }).then((done) => {
                                     if (done[0] === 1) {
-                                        say(channel.substring(1).toLowerCase(), `@${user.username.toLowerCase()} rolled a ${rolledNumber} and loss ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
+                                        say(channel, `@${user.username.toLowerCase()} rolled a ${rolledNumber} and loss ${ammountToGamble} Trend Tokens and now has ${totalPoints - ammountToGamble} Trend Tokens!`);
                                     }
                                 });
                             }
-                            alreadyGambled.push(user.username);
+                            thisStream[channel].alreadyGambled.push(user.username);
                             setTimeout(() => {
                                 alreadyGambled.splice(0);
                             }, 60000 * 5);
                         } else if (ammountToGamble > totalPoints) {
-                            say(channel.substring(1).toLowerCase(), `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
+                            say(channel, `@${user.username.toLowerCase()} you don't have ${ammountToGamble} Trend Tokens!`);
                         } else if (!canGamble) {
-                            say(channel.substring(1).toLowerCase(), `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
+                            say(channel, `@${user.username.toLowerCase()} you have to wait 5 minutes to gamble again.`);
                         }
                     });
                 });
@@ -501,7 +514,7 @@ client.on('chat', (channel, user, message, self) => {
                 foundViewer = foundViewer.dataValues;
                 Viewer.findOne({
                     where: {
-                        username: channel.substring(1).toLowerCase()
+                        username: channel
                     }
                 }).then((foundChannel) => {
                     foundChannel = foundChannel.dataValues;
@@ -513,7 +526,7 @@ client.on('chat', (channel, user, message, self) => {
                     }).then((foundViewerChannel) => {
                         foundViewerChannel = foundViewerChannel.dataValues;
                         if (foundViewerChannel.currentPoints < totalCost) {
-                            say(channel.substring(1).toLowerCase(), `${user.username} you only have ${foundViewerChannel.currentPoints} Trend Tokens!`);
+                            say(channel, `${user.username} you only have ${foundViewerChannel.currentPoints} Trend Tokens!`);
                         } else {
                             foundViewerChannel.currentPoints -= totalCost;
                             let ticketNumbers;
@@ -524,7 +537,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                                 Viewer.findOne({
                                     where: {
-                                        username: channel.substring(1).toLowerCase()
+                                        username: channel
                                     }
                                 }).then((currentChannel) => {
                                     currentChannel = currentChannel.dataValues;
@@ -555,9 +568,9 @@ client.on('chat', (channel, user, message, self) => {
                                         });
                                     }).then((done) => {
                                         if (foundViewerChannel.tickets.length < 50) {
-                                            say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
+                                            say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
                                         } else {
-                                            say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
+                                            say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
                                         }
                                     });
                                 });
@@ -569,7 +582,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                                 Viewer.findOne({
                                     where: {
-                                        username: channel.substring(1).toLowerCase()
+                                        username: channel
                                     }
                                 }).then((currentChannel) => {
                                     currentChannel = currentChannel.dataValues;
@@ -599,9 +612,9 @@ client.on('chat', (channel, user, message, self) => {
                                             }
                                         }).then((done) => {
                                             if (foundViewerChannel.tickets.length < 50) {
-                                                say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
+                                                say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
                                             } else {
-                                                say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
+                                                say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
                                             }
                                         });
                                     });
@@ -620,7 +633,7 @@ client.on('chat', (channel, user, message, self) => {
                 foundViewer = foundViewer.dataValues;
                 Viewer.findOne({
                     where: {
-                        username: channel.substring(1).toLowerCase()
+                        username: channel
                     }
                 }).then((foundChannel) => {
                     foundChannel = foundChannel.dataValues;
@@ -633,9 +646,9 @@ client.on('chat', (channel, user, message, self) => {
                         foundViewerChannel = foundViewerChannel.dataValues;
 
                         if (foundViewerChannel.tickets.length < 50) {
-                            say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
+                            say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Your numbers are ${foundViewerChannel.tickets.toString()}`);
                         } else {
-                            say(channel.substring(1).toLowerCase(), `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
+                            say(channel, `${user.username} now has ${foundViewerChannel.tickets.length} lottery tickets! Some of your numbers are ${foundViewerChannel.tickets.slice(0, 50).toString()}...`);
                         }
                     });
                 });
@@ -646,7 +659,7 @@ client.on('chat', (channel, user, message, self) => {
     if (message.split(" ")[0] === "!lottery") {
         Viewer.findOne({
             where: {
-                username: channel.substring(1).toLowerCase()
+                username: channel
             }
         }).then((foundStreamer) => {
             foundStreamer = foundStreamer.dataValues;
@@ -657,12 +670,14 @@ client.on('chat', (channel, user, message, self) => {
                 }
             }).then((foundChannel) => {
                 foundChannel = foundChannel.dataValues;
-                say(channel.substring(1).toLowerCase(), `The current lottery is at ${foundChannel.lottery} Trend Tokens!`);
+                say(channel, `The current lottery is at ${foundChannel.lottery} Trend Tokens!`);
             });
         });
     }
-    if (user.username.toLowerCase() === channel.substring(1).toLowerCase() && message.split(" ")[0] === "!dolottery") {
-        doLotteryNow(channel.substring(1).toLowerCase());
+    console.log(user.username.toLowerCase(), channel)
+    if (user.username.toLowerCase() === channel && message.split(" ")[0] === "!dolottery") {
+        console.log('yes')
+        doLotteryNow(channel);
     }
 });
 
@@ -843,7 +858,7 @@ function givePoints(viewerUsername, channel, ammount, message) {
         foundViewer = foundViewer.dataValues;
         Viewer.findOne({
             where: {
-                username: channel.substring(1).toLowerCase()
+                username: channel
             }
         }).then((foundChannel) => {
             foundChannel = foundChannel.dataValues;
@@ -862,7 +877,7 @@ function givePoints(viewerUsername, channel, ammount, message) {
                     }
                 }).then((done) => {
                     if (done[0] === 1) {
-                        say(channel.substring(1).toLowerCase(), message);
+                        say(channel, message);
                     }
                 });
             });
@@ -871,13 +886,15 @@ function givePoints(viewerUsername, channel, ammount, message) {
 }
 
 function say(channel, message) {
-    console.log(channel, message)
-    if (lastMsg !== message) {
-        lastMsg = message;
         if (!thisStream[channel]) {
             thisStream[channel] = {};
             thisStream[channel].messageDelay += 800;
+            thisStream[channel].lastMsg = "";
+            thisStream[channel].alreadyGambled = [];
         }
+            console.log(channel, message);
+        if (thisStream[channel].lastMsg !== message) {
+            thisStream[channel].lastMsg = message;
         setTimeout(() => {
             client.say(channel, message);
             thisStream[channel].messageDelay -= 800;
