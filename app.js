@@ -99,8 +99,6 @@ client.on('chat', (channel, user, message, self) => {
             say(`ERIC haHAA`);
         } else if (user.username.toLowerCase() === "itsmalia") {
             say(`AMANDA`);
-        } else {
-            say(`${user.username.toUpperCase()}`);
         }
     }
     if (message.slice(0, 12) === "!toptrenders" || message.slice(0, 12) === "!leaderboard" || message.slice(0, 13) === "!leaderboards") {
@@ -410,9 +408,9 @@ client.on('chat', (channel, user, message, self) => {
                                             }
                                         });
                                         if (ticketNumbers.length < 50) {
-                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Your numbers are ${ticketNumbers.toString()}`);
+                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets!`);
                                         } else {
-                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets! Some of your numbers are ${ticketNumbers.slice(0, 50).toString()}...`);
+                                            say(`${user.username} now has ${ticketNumbers.length} lottery tickets!`);
                                         }
                                     } else {
                                         let newUser = {};
