@@ -331,7 +331,7 @@ client.on('chat', (channel, user, message, self) => {
                         }
                     });
                     if (ammountToGamble <= totalPoints && canGamble && ammountToGamble > 0) {
-                        let rolledNumber = a ? Math.floor(Math.random() * (54 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+                        let rolledNumber = a ? Math.floor(Math.random() * (65 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
                         if (rolledNumber >= 55 && rolledNumber < 99) {
                             say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
                             fd.points += ammountToGamble;
