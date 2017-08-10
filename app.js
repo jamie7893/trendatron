@@ -83,10 +83,8 @@ client.on("resub", function (channel, username, months, message) {
 });
 
 client.on("cheer", function (channel, userstate, message) {
-    if (parseInt(userstate.bits, 10) > 95) {
         let bits = Math.floor(10 * userstate.bits);
         client.say("settingtrends", "!bonus " + userstate.username + " " + bits);
-    }
 });
 
 client.on('chat', (channel, user, message, self) => {
