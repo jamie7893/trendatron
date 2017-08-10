@@ -72,6 +72,23 @@ client.on('connected', (address, port) => {
     say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
 });
 
+client.on("subscription", function (channel, username, method) {
+    client.say("settingtrends", "Thank you so much for subscribing! Welcome to the Trend Setter's club!");
+    client.say("settingtrends", "!bonus " + username + " 5000");
+});
+
+client.on("resub", function (channel, username, months, message) {
+    client.say("settingtrends", "Thank you so much for subscribing for " + months + " months in a row! Welcome back to the Trend Setter's club!");
+    client.say("settingtrends", "!bonus " + username + " 5000");
+});
+
+client.on("cheer", function (channel, userstate, message) {
+    if (parseInt(userstate.bits, 10) > 95) {
+        let bits = Math.floor(10 * userstate.bits);
+        client.say("settingtrends", "!bonus " + userstate.username + " " + bits);
+    }
+});
+
 client.on('chat', (channel, user, message, self) => {
     if (message.slice(0, 1) === "!") {
         log_file_err.write(util.format(`${user.username}:${message}`) + '\n');
