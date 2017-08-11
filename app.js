@@ -322,8 +322,8 @@ client.on('chat', (channel, user, message, self) => {
         });
     }
     if (message.slice(0, 7) === "!gamble") {
-        if (message.slice(8).length && parseInt(message.slice(8), 10)) {
-            let ammountToGamble = parseInt(message.slice(8), 10),
+        if (message.slice(8).length && parseInt(message.slice(8), 10) || message.split(" ")[1].toLowerCase() === "all") {
+            let ammountToGamble = parseInt(message.slice(8), 10) || "all",
                 canGamble = true;
 
             alreadyGambled.forEach((didGamble) => {
@@ -345,7 +345,10 @@ client.on('chat', (channel, user, message, self) => {
                             canGamble = false;
                         }
                     });
-                    if (ammountToGamble <= totalPoints && canGamble && ammountToGamble > 0) {
+                    if ((ammountToGamble <= totalPoints || ammountToGamble === "all") && canGamble && ammountToGamble > 0) {
+                        if (ammountToGamble === "all") {
+                            ammountToGamble = totalPoints;
+                        }
                         let rolledNumber = a ? Math.floor(Math.random() * (65 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
                         if (rolledNumber >= 55 && rolledNumber < 99) {
                             say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
