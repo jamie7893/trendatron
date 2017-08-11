@@ -322,8 +322,8 @@ client.on('chat', (channel, user, message, self) => {
         });
     }
     if (message.slice(0, 7) === "!gamble") {
-        if (message.slice(8).length && parseInt(message.slice(8), 10) || message.split(" ")[1].toLowerCase() === "all") {
-            let ammountToGamble = parseInt(message.slice(8), 10) || "all",
+        if (message.split(" ")[1].toLowerCase() === "all" || message.split(" ")[1].length && parseInt(message.slice(8), 10)) {
+            let ammountToGamble = message.split(" ")[1].toLowerCase() === "all" ? "all" : parseInt(message.slice(8), 10);
                 canGamble = true;
 
             alreadyGambled.forEach((didGamble) => {
