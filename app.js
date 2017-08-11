@@ -325,7 +325,7 @@ client.on('chat', (channel, user, message, self) => {
         if (message.split(" ")[1].toLowerCase() === "all" || message.split(" ")[1].length && parseInt(message.slice(8), 10)) {
             let ammountToGamble = message.split(" ")[1].toLowerCase() === "all" ? "all" : parseInt(message.slice(8), 10);
                 canGamble = true;
-
+            console.log("this is ammount", ammountToGamble)
             alreadyGambled.forEach((didGamble) => {
                 if (didGamble === user.username) {
                     canGamble = false;
@@ -345,7 +345,7 @@ client.on('chat', (channel, user, message, self) => {
                             canGamble = false;
                         }
                     });
-                    if ((ammountToGamble <= totalPoints || ammountToGamble === "all") && canGamble && ammountToGamble > 0) {
+                    if ((ammountToGamble <= totalPoints || ammountToGamble === "all" && totalPoints > 0) && canGamble && (ammountToGamble > 0 || ammountToGamble === "all")) {
                         if (ammountToGamble === "all") {
                             ammountToGamble = totalPoints;
                         }
