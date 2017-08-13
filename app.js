@@ -499,7 +499,7 @@ function doLotteryNow() {
                         let winningPot = fd.pot;
                         fd.pot = 5000 + parseInt(lottery.newPot, 10);
                         fd.users = [];
-                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Alfie points from the lottery!`);
+                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend tokens from the lottery!`);
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                             if (err) {
                                 console.log(err);
@@ -535,7 +535,7 @@ function doLotteryNow() {
                             if (err) {
                                 console.log(err);
                             } else {
-                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Alfie points!`);
+                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend tokens!`);
                                 let uniqueNames = [];
                                 _.each(winners, function (el) {
                                     if (uniqueNames.indexOf(el) === -1) uniqueNames.push(el);
@@ -545,9 +545,10 @@ function doLotteryNow() {
                                         if (err) {
                                             console.log(err);
                                         } else {
-                                            let nbOcc = parseInt($.grep(winners, function (elem) {
-                                                return elem == winner;
-                                            }).length, 10);
+                                            let nbOcc = 0;
+                                            _.each(winners, function (elem) {
+                                                if (elem === winner) { nbOcc++;}
+                                            });
                                             fd.points += parseInt(Math.floor((winningPot * nbOcc) / winners.length, 10));
                                             jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
                                                 if (err) {
@@ -576,9 +577,9 @@ function doLotteryNow() {
                         if (err) {
                             console.log(err);
                         } else {
-                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Alfie points!`);
+                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend tokens!`);
                             lottery.newPot = 0;
-                            say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Alfie points each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                            say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
