@@ -352,7 +352,7 @@ client.on('chat', (channel, user, message, self) => {
                         }
                         let rolledNumber = a ? Math.floor(Math.random() * (65 - 1 + 1)) + 1 : Math.floor(Math.random() * (100 - 1 + 1)) + 1;
                         if (rolledNumber >= 55 && rolledNumber < 99) {
-                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
+                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble} Trend Tokens!`);
                             fd.points += ammountToGamble;
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
@@ -360,7 +360,7 @@ client.on('chat', (channel, user, message, self) => {
                                 }
                             });
                         } else if (rolledNumber >= 99) {
-                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 2} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
+                            say(`@${user.username.toLowerCase()} rolled a ${rolledNumber} and won ${ammountToGamble * 3} Trend Tokens and now has ${totalPoints + ammountToGamble * 2} Trend Tokens!`);
                             fd.points += (ammountToGamble * 2);
                             jsonfile.writeFile(`viewers/${fd.user}`, fd, (err) => {
                                 if (err) {
