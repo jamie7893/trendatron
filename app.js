@@ -5,6 +5,7 @@ let tmi = require('tmi.js'),
     _ = require('lodash'),
     jsonfile = require('jsonfile'),
     config = require('./config.js'),
+    $ = require("jquery"),
     options = {
         options: {
             debug: true
@@ -498,7 +499,7 @@ function doLotteryNow() {
                         let winningPot = fd.pot;
                         fd.pot = 5000 + parseInt(lottery.newPot, 10);
                         fd.users = [];
-                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Trend Tokens from the lottery!`);
+                        say(`The winning number is ${winningNumber}. ${winners[0]} has won ${winningPot} Alfie points from the lottery!`);
                         jsonfile.writeFile(`./lottery.json`, fd, (err) => {
                             if (err) {
                                 console.log(err);
@@ -534,13 +535,20 @@ function doLotteryNow() {
                             if (err) {
                                 console.log(err);
                             } else {
-                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Trend Tokens!`);
-                                _.each(winners, (winner) => {
+                                say(`The winning number is ${winningNumber}. There was more then one winner! Here are your winners: ${winners.toString()} they each get ${Math.floor(winningPot / winners.length)} Alfie points!`);
+                                let uniqueNames = [];
+                                _.each(winners, function (el) {
+                                    if (uniqueNames.indexOf(el) === -1) uniqueNames.push(el);
+                                });
+                                _.each(uniqueNames, (winner) => {
                                     jsonfile.readFile(`viewers/${winner}`, (err, fd) => {
                                         if (err) {
                                             console.log(err);
                                         } else {
-                                            fd.points += parseInt(Math.floor(winningPot / winners.length, 10));
+                                            let nbOcc = parseInt($.grep(winners, function (elem) {
+                                                return elem == winner;
+                                            }).length, 10);
+                                            fd.points += parseInt(Math.floor((winningPot * nbOcc) / winners.length, 10));
                                             jsonfile.writeFile(`viewers/${winner}`, fd, (err) => {
                                                 if (err) {
                                                     console.log(err);
@@ -568,9 +576,9 @@ function doLotteryNow() {
                         if (err) {
                             console.log(err);
                         } else {
-                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Trend Tokens!`);
+                            say(`The winning lottery number is ${winningNumber} and there are no winners! The pot has increased to ${thePot} Alfie points!`);
                             lottery.newPot = 0;
-                            say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Trend Tokens each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
+                            say(`The lottery drawing will begin in 15 minutes! Tickets cost 5 Alfie points each, to purchase ticket(s) type "!ticket amount". Good Luck!`);
                         }
                     });
                 }
@@ -618,7 +626,7 @@ function getTicketNumber() {
 
 function resetLotteryPot() {
     jsonfile.readFile(`lottery.json`, (err, fd) => {
-        fd.pot = 10000;
+        fd.pot = 50000;
         jsonfile.writeFile(`lottery.json`, fd, (err) => {
             if (err) {
                 console.log(err);
