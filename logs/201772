@@ -1,0 +1,32 @@
+settingtrends:!bonus wicked_cx 100
+wicked_cx:!trendtokens
+wicked_cx:!gamble 219
+settingtrends:!trendtokens
+settingtrends:!gamble 853
+azoras:!trendtokens
+azoras:!gamble 50
+jayseef:!trendtokens
+4rkston8:!skip
+wicked_cx:!trendtokens
+wicked_cx:!gamble 471
+4rkston8:!skip 4Head
+wicked_cx:!bonus jayseef 40000
+wicked_cx:!bonus Wicked_Cx 10000
+jayseef:!trendtokens
+jayseef:!gamble 11923
+turtleoncrack:!trendtokens
+turtleoncrack:!gamble 165
+wicked_cx:!permit jayseef
+false_hopes:!filters
+false_hopes:!filters emotes limit 10
+false_hopes:!filters symbols limit 10
+false_hopes:!filters symbols limit 20
+ninja1124v3:!false hope
+ninja1124v3:!command add !hope @false_hopes 4Head
+jayseef:!hope
+ninja1124v3:!command add !hope hey noob @false_hopes 4Head
+false_hopes:!filters repetitions limit 100
+false_hopes:!filters repetitions limit 10
+false_hopes:!filter repetitions limit 20
+notcreativeenoughfornames:!uptime
+settingtrends:!uptime

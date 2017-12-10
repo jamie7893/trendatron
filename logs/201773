@@ -1,0 +1,41 @@
+settingtrends:!bonus alfierules 100
+boukrt:!rank
+ultimateubers:!rank @my_woe
+my_woe:!rank
+my_woe:!editcom !rank $(leagueoflegends Squah NA)$
+my_woe:!rank
+my_woe:!editcom !rank $(leagueoflegends Squah NA)
+my_woe:!rank
+Caught exception: SyntaxError: Unexpected end of JSON input
+ultimateubers:!trendtokens
+jayseef:!trendtokens
+4rkstone:!trendtokens
+ultimateubers:!gamble 5112
+my_woe:!trendtokens
+my_woe:!gamble 154
+4rkstone:!gamble 15
+jayseef:!bonus jayseef 20000
+my_woe:!bonus jayseef -20000
+jayseef:!trendtokens
+settingtrends:!givesupermod my_woe
+my_woe:!bonus jayseef -200000
+my_woe:!bonus jayseef 180000
+jayseef:!tokens
+jayseef:!trendtokens
+my_woe:!permit madmattk
+my_woe:!whitelist http://www.imgur.com
+my_woe:!BONUS Jayseef -20000
+my_woe:!ban 4rkstone 600
+my_woe:!bonus jayseef -20000
+my_woe:!bonus my_woe 100000
+my_woe:!trendtokens
+jayseef:!tickets 2000
+my_woe:!bonus my_woe -90000
+my_woe:!tickets 2000
+my_woe:!trendtokens
+my_woe:!gamble 340
+ultimateubers:!gamble 10
+ultimateubers:!gamble 30
+my_woe:!trendtokens
+jayseef:!subs
+settingtrends:!uptime
